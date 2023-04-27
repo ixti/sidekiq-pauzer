@@ -27,7 +27,9 @@ module Sidekiq
         end
 
         def paused_queues
-          redis.smembers(redis_key)
+          # Cursor is not atomic, so there may be duplicates because of
+          # concurrent update operations
+          redis.sscan_each(redis_key).to_a.uniq
         end
       end
     end
