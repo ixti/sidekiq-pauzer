@@ -29,7 +29,7 @@ module Sidekiq
             # Cursor is not atomic, so there may be duplicates because of
             # concurrent update operations
             # See: https://redis.io/commands/scan/#scan-guarantees
-            redis.sscan_each(key).to_a.uniq.each(&:freeze)
+            redis.sscan(key).to_a.uniq.each(&:freeze)
           end
         end
       end
