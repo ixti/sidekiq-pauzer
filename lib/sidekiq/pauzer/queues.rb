@@ -15,8 +15,9 @@ module Sidekiq
 
       QUEUE_PREFIX = "queue:"
 
-      # @param config [Configuration]
+      # @param config [Config]
       def initialize(config)
+        @config    = Sidekiq.config
         @mutex     = Mutex.new
         @queues    = []
         @redis_key = config.redis_key
@@ -70,6 +71,9 @@ module Sidekiq
       def initialize_refresher(refresh_rate)
         Refresher.new(execution_interval: refresh_rate, run_now: true) do
           refresh
+        rescue Exception => e # rubocop:disable Lint/RescueException
+          handle_exception(e, { context: "sidekiq.pauzer" })
+          raise e
         end
       end
 
