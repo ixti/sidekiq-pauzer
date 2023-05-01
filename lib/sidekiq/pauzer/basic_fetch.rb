@@ -20,7 +20,7 @@ module Sidekiq
             permute
           end
         end
-      elsif Gem::Version.new("6.5.0") <= Gem::Version.new(Sidekiq::VERSION)
+      else
         def queues_cmd
           if @strictly_ordered_queues
             *queues, timeout = @queues
@@ -31,19 +31,6 @@ module Sidekiq
             permute.shuffle!
             permute.uniq!
             permute << { timeout: Sidekiq::BasicFetch::TIMEOUT }
-          end
-        end
-      else # Sidekiq 6.4.x
-        def queues_cmd
-          if @strictly_ordered_queues
-            *queues, timeout = @queues
-
-            (queues - Pauzer.paused_queues) << timeout
-          else
-            permute = (@queues - Pauzer.paused_queues)
-            permute.shuffle!
-            permute.uniq!
-            permute << Sidekiq::BasicFetch::TIMEOUT
           end
         end
       end
