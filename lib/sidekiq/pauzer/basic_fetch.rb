@@ -1,5 +1,8 @@
 # frozen_string_literal: true
 
+require "sidekiq"
+require "sidekiq/fetch"
+
 module Sidekiq
   module Pauzer
     # Default Sidekiq's BasicFetch infused with Pauzer

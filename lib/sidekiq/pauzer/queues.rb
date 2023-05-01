@@ -1,31 +1,32 @@
 # frozen_string_literal: true
 
+require "concurrent"
+
 require_relative "./adapters"
 
 module Sidekiq
   module Pauzer
     # @api internal
-    class PausedQueues
+    class Queues
       include Enumerable
       include Sidekiq::Component
 
+      class Refresher < Concurrent::TimerTask; end
+
       QUEUE_PREFIX = "queue:"
-      private_constant :QUEUE_PREFIX
 
+      # @param config [Configuration]
       def initialize(config)
-        @mutex  = Mutex.new
-        @queues = []
-        @config = config
-      end
-
-      def to_a
-        @mutex.synchronize { @queues.dup }
+        @mutex     = Mutex.new
+        @queues    = []
+        @redis_key = config.redis_key
+        @refresher = initialize_refresher(config.refresh_rate)
       end
 
       def each(&block)
         return to_enum __method__ unless block
 
-        to_a.each(&block)
+        @mutex.synchronize { @queues.dup }.each(&block)
 
         self
       end
@@ -33,7 +34,7 @@ module Sidekiq
       def pause!(queue)
         queue = normalize_queue_name(queue)
 
-        redis { |conn| Adapters[conn].pause!(conn, @config.redis_key, queue) }
+        redis { |conn| Adapters[conn].pause!(conn, @redis_key, queue) }
 
         refresh
       end
@@ -41,7 +42,7 @@ module Sidekiq
       def resume!(queue)
         queue = normalize_queue_name(queue)
 
-        redis { |conn| Adapters[conn].resume!(conn, @config.redis_key, queue) }
+        redis { |conn| Adapters[conn].resume!(conn, @redis_key, queue) }
 
         refresh
       end
@@ -50,12 +51,32 @@ module Sidekiq
         include?(normalize_queue_name(queue))
       end
 
+      def start_refresher
+        @refresher.execute
+        nil
+      end
+
+      def stop_refresher
+        @refresher.shutdown
+        nil
+      end
+
+      def refresher_running?
+        @refresher.running?
+      end
+
       private
+
+      def initialize_refresher(refresh_rate)
+        Refresher.new(execution_interval: refresh_rate, run_now: true) do
+          refresh
+        end
+      end
 
       def refresh
         @mutex.synchronize do
           paused_queues = redis do |conn|
-            Adapters[conn].paused_queues(conn, @config.redis_key)
+            Adapters[conn].paused_queues(conn, @redis_key)
           end
 
           @queues.replace(paused_queues)
