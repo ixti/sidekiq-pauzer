@@ -9,13 +9,43 @@ module Sidekiq
     class BasicFetch < Sidekiq::BasicFetch
       private
 
-      def queues_cmd
-        paused_queues = Pauzer.paused_queues
-        return super if paused_queues.empty?
+      if Gem::Version.new("7.0.0") <= Gem::Version.new(Sidekiq::VERSION)
+        def queues_cmd
+          if @strictly_ordered_queues
+            @queues - Pauzer.paused_queues
+          else
+            permute = (@queues - Pauzer.paused_queues)
+            permute.shuffle!
+            permute.uniq!
+            permute
+          end
+        end
+      elsif Gem::Version.new("6.5.0") <= Gem::Version.new(Sidekiq::VERSION)
+        def queues_cmd
+          if @strictly_ordered_queues
+            *queues, timeout = @queues
 
-        *queues, timeout = super
+            (queues - Pauzer.paused_queues) << timeout
+          else
+            permute = (@queues - Pauzer.paused_queues)
+            permute.shuffle!
+            permute.uniq!
+            permute << { timeout: Sidekiq::BasicFetch::TIMEOUT }
+          end
+        end
+      else # Sidekiq 6.4.x
+        def queues_cmd
+          if @strictly_ordered_queues
+            *queues, timeout = @queues
 
-        (queues - paused_queues) << timeout
+            (queues - Pauzer.paused_queues) << timeout
+          else
+            permute = (@queues - Pauzer.paused_queues)
+            permute.shuffle!
+            permute.uniq!
+            permute << Sidekiq::BasicFetch::TIMEOUT
+          end
+        end
       end
     end
   end
