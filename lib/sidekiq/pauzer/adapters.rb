@@ -7,13 +7,11 @@ module Sidekiq
   module Pauzer
     # @api internal
     module Adapters
-      class << self
-        def build(redis, config)
-          return Adapters::RedisClient.new(redis, config) if Adapters::RedisClient.adapts?(redis)
-          return Adapters::Redis.new(redis, config)       if Adapters::Redis.adapts?(redis)
+      def self.[](redis)
+        return Adapters::RedisClient if Adapters::RedisClient.adapts?(redis)
+        return Adapters::Redis       if Adapters::Redis.adapts?(redis)
 
-          raise TypeError, "Unsupported redis client: #{redis.class}"
-        end
+        raise TypeError, "Unsupported redis client: #{redis.class}"
       end
     end
   end
