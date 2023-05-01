@@ -7,6 +7,8 @@ gem "rake"
 
 group :test do
   gem "redis"
+  gem "redis-client"
+  gem "sidekiq"
 
   gem "rspec"
   gem "simplecov"
