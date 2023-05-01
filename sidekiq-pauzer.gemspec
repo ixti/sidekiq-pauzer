@@ -22,7 +22,7 @@ Gem::Specification.new do |spec|
     docs = %w[LICENSE.txt README.adoc].freeze
 
     `git ls-files -z`.split("\x0").select do |f|
-      f.start_with?("lib/") || docs.include?(f)
+      f.start_with?("lib/", "web/") || docs.include?(f)
     end
   end
 

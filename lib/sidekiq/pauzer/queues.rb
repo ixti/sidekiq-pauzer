@@ -39,10 +39,10 @@ module Sidekiq
         refresh
       end
 
-      def resume!(queue)
+      def unpause!(queue)
         queue = normalize_queue_name(queue)
 
-        redis { |conn| Adapters[conn].resume!(conn, @redis_key, queue) }
+        redis { |conn| Adapters[conn].unpause!(conn, @redis_key, queue) }
 
         refresh
       end

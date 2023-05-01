@@ -21,7 +21,7 @@ module Sidekiq
             redis.call("SADD", key, queue)
           end
 
-          def resume!(redis, key, queue)
+          def unpause!(redis, key, queue)
             redis.call("SREM", key, queue)
           end
 

@@ -35,6 +35,21 @@ end
 ----
 
 
+=== Adding Pause/Resume Button to the Queues Tab
+
+If you're not overriding `Sidekiq::Web.views` path, then you can override
+default queues tab with:
+
+[source, ruby]
+----
+require "sidekiq/web"
+require "sidekiq/pauzer/web"
+----
+
+NOTE: If you are using custom Sidekiq views path, then you will need to call
+  (after requiring `sidekiq/pauzer/web`): `Sidekiq::Pauzer.unpatch_views!`.
+
+
 == Development
 
   scripts/update-gemfiles
