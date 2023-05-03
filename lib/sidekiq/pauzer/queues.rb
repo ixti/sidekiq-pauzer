@@ -9,7 +9,6 @@ module Sidekiq
     # @api internal
     class Queues
       include Enumerable
-      include Sidekiq::Component
 
       class Refresher < Concurrent::TimerTask; end
 
@@ -17,7 +16,6 @@ module Sidekiq
 
       # @param config [Config]
       def initialize(config)
-        @config    = Sidekiq.config
         @mutex     = Mutex.new
         @queues    = []
         @redis_key = config.redis_key
@@ -35,7 +33,7 @@ module Sidekiq
       def pause!(queue)
         queue = normalize_queue_name(queue)
 
-        redis { |conn| Adapters[conn].pause!(conn, @redis_key, queue) }
+        Sidekiq.redis { |conn| Adapters[conn].pause!(conn, @redis_key, queue) }
 
         refresh
       end
@@ -43,7 +41,7 @@ module Sidekiq
       def unpause!(queue)
         queue = normalize_queue_name(queue)
 
-        redis { |conn| Adapters[conn].unpause!(conn, @redis_key, queue) }
+        Sidekiq.redis { |conn| Adapters[conn].unpause!(conn, @redis_key, queue) }
 
         refresh
       end
@@ -71,15 +69,12 @@ module Sidekiq
       def initialize_refresher(refresh_rate)
         Refresher.new(execution_interval: refresh_rate, run_now: true) do
           refresh
-        rescue Exception => e # rubocop:disable Lint/RescueException
-          handle_exception(e, { context: "sidekiq.pauzer" })
-          raise e
         end
       end
 
       def refresh
         @mutex.synchronize do
-          paused_queues = redis do |conn|
+          paused_queues = Sidekiq.redis do |conn|
             Adapters[conn].paused_queues(conn, @redis_key)
           end
 

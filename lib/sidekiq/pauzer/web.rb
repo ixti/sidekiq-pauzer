@@ -37,7 +37,7 @@ module Sidekiq
     PAUZER_QUEUES_TEMPLATE =
       ERB.new(File.read(File.expand_path("../../../web/views/queues.erb", __dir__))).src
 
-    class_eval <<-RUBY, __FILE__, __LINE__ + 1
+    class_eval <<-RUBY, __FILE__, __LINE__ + 1 # rubocop:disable Style/DocumentDynamicEvalDefinition
       def _erb_queues
         #{PAUZER_QUEUES_TEMPLATE}
       end
