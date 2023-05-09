@@ -1,16 +1,15 @@
 # frozen_string_literal: true
 
+require_relative "../runtime"
+
 module Sidekiq
   module Pauzer
     module Adapters
       # redis-client adapter
       module RedisClient
-        SIDEKIQ_SEVEN   = Gem::Version.new("7.0.0").freeze
-        SIDEKIQ_VERSION = Gem::Version.new(Sidekiq::VERSION).freeze
-
         class << self
           def adapts?(redis)
-            return true if SIDEKIQ_SEVEN <= SIDEKIQ_VERSION
+            return true if Runtime::SIDEKIQ_SEVEN
             return true if defined?(::RedisClient) && redis.is_a?(::RedisClient)
             return true if defined?(::RedisClient::Decorator::Client) && redis.is_a?(::RedisClient::Decorator::Client)
 
