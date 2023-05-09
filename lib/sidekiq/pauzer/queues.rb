@@ -52,12 +52,14 @@ module Sidekiq
 
       def start_refresher
         @refresher.execute
-        nil
+
+        self
       end
 
       def stop_refresher
         @refresher.shutdown
-        nil
+
+        self
       end
 
       def refresher_running?
@@ -85,7 +87,7 @@ module Sidekiq
       end
 
       def normalize_queue_name(queue)
-        queue.dup.delete_prefix(QUEUE_PREFIX)
+        queue.to_s.dup.delete_prefix(QUEUE_PREFIX)
       end
     end
   end

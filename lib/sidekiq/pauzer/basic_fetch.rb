@@ -3,13 +3,15 @@
 require "sidekiq"
 require "sidekiq/fetch"
 
+require_relative "./runtime"
+
 module Sidekiq
   module Pauzer
     # Default Sidekiq's BasicFetch infused with Pauzer
     class BasicFetch < Sidekiq::BasicFetch
       private
 
-      if Gem::Version.new("7.0.0") <= Gem::Version.new(Sidekiq::VERSION)
+      if Runtime::SIDEKIQ_SEVEN
         def queues_cmd
           if @strictly_ordered_queues
             @queues - Pauzer.paused_queues
@@ -22,16 +24,17 @@ module Sidekiq
         end
       else
         def queues_cmd
-          if @strictly_ordered_queues
-            *queues, timeout = @queues
+          queues =
+            if @strictly_ordered_queues
+              @queues[0...-1] - Pauzer.paused_queues
+            else
+              permute = (@queues - Pauzer.paused_queues)
+              permute.shuffle!
+              permute.uniq!
+              permute
+            end
 
-            (queues - Pauzer.paused_queues) << timeout
-          else
-            permute = (@queues - Pauzer.paused_queues)
-            permute.shuffle!
-            permute.uniq!
-            permute << { timeout: Sidekiq::BasicFetch::TIMEOUT }
-          end
+          queues << { timeout: Sidekiq::BasicFetch::TIMEOUT }
         end
       end
     end
