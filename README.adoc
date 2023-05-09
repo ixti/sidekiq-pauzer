@@ -34,6 +34,25 @@ Sidekiq.configure_server do |config|
 end
 ----
 
+=== API
+
+This gem enhances Sidekiq's Queue API with:
+
+[source, ruby]
+----
+Sidekiq::Queue.new("critical").paused? # => true|false
+Sidekiq::Queue.new("critical").pause!
+Sidekiq::Queue.new("critical").unpause!
+----
+
+Those translates to:
+
+[source, ruby]
+----
+Sidekiq::Pauzer.paused?("critical").paused? # => true|false
+Sidekiq::Pauzer.pause!("critical")
+Sidekiq::Pauzer.unpause!("critical")
+----
 
 === Adding Pause/Resume Button to the Queues Tab
 

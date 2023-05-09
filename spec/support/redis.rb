@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 REDIS_URL = ENV.fetch("REDIS_URL", "redis://localhost:6379")
-REDIS_GEM = ENV.fetch("REDIS_GEM", "redis")
+REDIS_GEM = ENV.fetch("REDIS_GEM", "redis-client")
 
 begin
   require_relative "./redis/#{REDIS_GEM}"

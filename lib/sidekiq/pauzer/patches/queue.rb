@@ -17,10 +17,12 @@ module Sidekiq
 
         def pause!
           Pauzer.pause!(name)
+          nil
         end
 
         def unpause!
           Pauzer.unpause!(name)
+          nil
         end
       end
     end
