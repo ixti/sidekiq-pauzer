@@ -49,7 +49,7 @@ Those translates to:
 
 [source, ruby]
 ----
-Sidekiq::Pauzer.paused?("critical").paused? # => true|false
+Sidekiq::Pauzer.paused?("critical") # => true|false
 Sidekiq::Pauzer.pause!("critical")
 Sidekiq::Pauzer.unpause!("critical")
 ----
