@@ -7,5 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.0.0] - 2023-05-09
 
-[unreleased]: https://gitlab.com/ixti/sidekiq-pauzer
+### Added
+
+- Initial release that supports sidekiq >= 6.5.0
+
+
+[unreleased]: https://gitlab.com/ixti/sidekiq-pauzer/-/compare/v1.0.0...main
+[unreleased]: https://gitlab.com/ixti/sidekiq-pauzer/-/tree/v1.0.0
