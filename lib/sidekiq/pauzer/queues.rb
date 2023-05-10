@@ -12,8 +12,6 @@ module Sidekiq
 
       class Refresher < Concurrent::TimerTask; end
 
-      QUEUE_PREFIX = "queue:"
-
       # @param config [Config]
       def initialize(config)
         @mutex     = Mutex.new
@@ -31,23 +29,19 @@ module Sidekiq
       end
 
       def pause!(queue)
-        queue = normalize_queue_name(queue)
-
-        Sidekiq.redis { |conn| Adapters[conn].pause!(conn, @redis_key, queue) }
+        Sidekiq.redis { |conn| Adapters[conn].pause!(conn, @redis_key, queue.to_s) }
 
         refresh
       end
 
       def unpause!(queue)
-        queue = normalize_queue_name(queue)
-
-        Sidekiq.redis { |conn| Adapters[conn].unpause!(conn, @redis_key, queue) }
+        Sidekiq.redis { |conn| Adapters[conn].unpause!(conn, @redis_key, queue.to_s) }
 
         refresh
       end
 
       def paused?(queue)
-        include?(normalize_queue_name(queue))
+        include?(queue.to_s)
       end
 
       def start_refresher
@@ -84,10 +78,6 @@ module Sidekiq
         end
 
         self
-      end
-
-      def normalize_queue_name(queue)
-        queue.to_s.dup.delete_prefix(QUEUE_PREFIX)
       end
     end
   end

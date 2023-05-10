@@ -41,12 +41,6 @@ RSpec.describe Sidekiq::Pauzer::Queues do
         .and change(queues, :to_a).to(match_array(%w[foo bar]))
     end
 
-    it "strips out ‹queue:› prefix" do
-      expect { %w[queue:foo bar].each { |q| queues.pause!(q) } }
-        .to change { redis_smembers(config.redis_key) }.to(match_array(%w[foo bar]))
-        .and change(queues, :to_a).to(match_array(%w[foo bar]))
-    end
-
     it "support queue name given as Symbol" do
       expect { %i[foo bar].each { |q| queues.pause!(q) } }
         .to change { redis_smembers(config.redis_key) }.to(match_array(%w[foo bar]))
@@ -56,7 +50,7 @@ RSpec.describe Sidekiq::Pauzer::Queues do
     it "avoids duplicates" do
       queues.pause! "foo"
 
-      expect { %w[queue:foo foo bar].each { |q| queues.pause!(q) } }
+      expect { %w[foo bar].each { |q| queues.pause!(q) } }
         .to change { redis_smembers(config.redis_key) }.to(match_array(%w[foo bar]))
         .and change(queues, :to_a).to(match_array(%w[foo bar]))
     end
@@ -70,12 +64,6 @@ RSpec.describe Sidekiq::Pauzer::Queues do
 
     it "removes queue from the paused list" do
       expect { queues.unpause!("foo") }
-        .to change { redis_smembers(config.redis_key) }.to(contain_exactly("bar"))
-        .and change(queues, :to_a).to(contain_exactly("bar"))
-    end
-
-    it "strips out ‹queue:› prefix" do
-      expect { queues.unpause!("queue:foo") }
         .to change { redis_smembers(config.redis_key) }.to(contain_exactly("bar"))
         .and change(queues, :to_a).to(contain_exactly("bar"))
     end
@@ -109,10 +97,6 @@ RSpec.describe Sidekiq::Pauzer::Queues do
 
       it "returns ‹true›" do
         expect(queues.paused?("foo")).to be true
-      end
-
-      it "strips out ‹queue:› prefix" do
-        expect(queues.paused?("queue:foo")).to be true
       end
 
       it "support queue name given as Symbol" do

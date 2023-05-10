@@ -39,7 +39,7 @@ module Sidekiq
       def_delegators :@config, :redis_key
 
       def paused_queues
-        @queues.map { |queue| "#{Queues::QUEUE_PREFIX}#{queue}" }
+        @queues.map { |queue| "queue:#{queue}" }
       end
 
       def configure

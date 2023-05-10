@@ -37,12 +37,6 @@ RSpec.describe Sidekiq::Pauzer do
         .and change(described_class, :paused_queues).to(match_array(%w[queue:foo queue:bar]))
     end
 
-    it "strips out ‹queue:› prefix" do
-      expect { %w[queue:foo bar].each { |q| described_class.pause!(q) } }
-        .to change { redis_smembers(described_class.redis_key) }.to(match_array(%w[foo bar]))
-        .and change(described_class, :paused_queues).to(match_array(%w[queue:foo queue:bar]))
-    end
-
     it "support queue name given as Symbol" do
       expect { %i[foo bar].each { |q| described_class.pause!(q) } }
         .to change { redis_smembers(described_class.redis_key) }.to(match_array(%w[foo bar]))
@@ -52,7 +46,7 @@ RSpec.describe Sidekiq::Pauzer do
     it "avoids duplicates" do
       described_class.pause!("foo")
 
-      expect { %w[queue:foo foo bar].each { |q| described_class.pause!(q) } }
+      expect { %w[foo bar].each { |q| described_class.pause!(q) } }
         .to change { redis_smembers(described_class.redis_key) }.to(match_array(%w[foo bar]))
         .and change(described_class, :paused_queues).to(match_array(%w[queue:foo queue:bar]))
     end
@@ -66,12 +60,6 @@ RSpec.describe Sidekiq::Pauzer do
 
     it "removes queue from the paused list" do
       expect { described_class.unpause!("foo") }
-        .to change { redis_smembers(described_class.redis_key) }.to(contain_exactly("bar"))
-        .and change(described_class, :paused_queues).to(contain_exactly("queue:bar"))
-    end
-
-    it "strips out ‹queue:› prefix" do
-      expect { described_class.unpause!("queue:foo") }
         .to change { redis_smembers(described_class.redis_key) }.to(contain_exactly("bar"))
         .and change(described_class, :paused_queues).to(contain_exactly("queue:bar"))
     end
@@ -107,10 +95,6 @@ RSpec.describe Sidekiq::Pauzer do
         expect(described_class.paused?("foo")).to be true
       end
 
-      it "strips out ‹queue:› prefix" do
-        expect(described_class.paused?("queue:foo")).to be true
-      end
-
       it "support queue name given as Symbol" do
         expect(described_class.paused?(:foo)).to be true
       end
@@ -119,7 +103,7 @@ RSpec.describe Sidekiq::Pauzer do
 
   describe ".paused_queues" do
     it "returns list of paused queue names with `queue:` prefix" do
-      expect { %w[foo queue:bar].each { |q| described_class.pause!(q) } }
+      expect { %w[foo bar].each { |q| described_class.pause!(q) } }
         .to change(described_class, :paused_queues).to(match_array(%w[queue:foo queue:bar]))
     end
   end
