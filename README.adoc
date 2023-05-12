@@ -96,15 +96,16 @@ dropped.
 
 This library aims to support and work with following Sidekiq versions:
 
-* Sidekiq 6.5.x
 * Sidekiq 7.0.x
 * Sidekiq 7.1.x
 
 
 == Development
 
-  scripts/update-gemfiles
-  scripts/run-rspec
+  bundle install
+  bundle exec appraisal generate
+  bundle exec appraisal install
+  bundle exec appraisal rspec
   bundle exec rubocop
 
 

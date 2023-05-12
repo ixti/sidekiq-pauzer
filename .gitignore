@@ -1,6 +1,7 @@
 /.bundle
 /tmp
 /Gemfile.lock
+/gemfiles/*.lock
 
 # Built gems
 /pkg
@@ -8,9 +9,6 @@
 # rspec
 /coverage
 /spec/examples.txt
-
-# Appraisals
-/gemfiles
 
 # YARD
 /doc

@@ -2,18 +2,12 @@
 
 RSpec.describe Sidekiq::Pauzer::BasicFetch do
   subject(:fetch) do
-    if Sidekiq::Pauzer::Runtime::SIDEKIQ_SEVEN
-      config = Sidekiq::Config.new
-      config.queues = queues
-      described_class.new(config.default_capsule)
-    else
-      Sidekiq.instance_variable_set(:@config, Sidekiq::DEFAULTS.dup)
-      Sidekiq.queues = queues
-      described_class.new(Sidekiq)
-    end
+    config = Sidekiq::Config.new
+    config.queues = queues
+    described_class.new(config.default_capsule)
   end
 
-  let(:queues) { ["foo,1", "bar,2", "baz,3"] }
+  let(:queues) { ["foo,1", "bar,10", "baz,100"] }
 
   before do
     Sidekiq::Pauzer.pause!(:foo)
@@ -46,28 +40,14 @@ RSpec.describe Sidekiq::Pauzer::BasicFetch do
     subject(:queues_cmd) { fetch.__send__(:queues_cmd) }
 
     it "returns non-paused queues only" do
-      if Sidekiq::Pauzer::Runtime::SIDEKIQ_SEVEN
-        expect(queues_cmd).to match_array(%w[queue:bar queue:baz])
-      else
-        *queues, options = queues_cmd
-
-        expect(queues).to match_array(%w[queue:bar queue:baz])
-        expect(options).to eq({ timeout: Sidekiq::BasicFetch::TIMEOUT })
-      end
+      expect(queues_cmd).to match_array(%w[queue:bar queue:baz])
     end
 
     context "with strict order" do
       let(:queues) { %w[foo bar baz] }
 
       it "fetches non-paused queues only in strict order" do
-        if Sidekiq::Pauzer::Runtime::SIDEKIQ_SEVEN
-          expect(queues_cmd).to eq(%w[queue:bar queue:baz])
-        else
-          *queues, options = queues_cmd
-
-          expect(queues).to eq(%w[queue:bar queue:baz])
-          expect(options).to eq({ timeout: Sidekiq::BasicFetch::TIMEOUT })
-        end
+        expect(queues_cmd).to eq(%w[queue:bar queue:baz])
       end
     end
   end

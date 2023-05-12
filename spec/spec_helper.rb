@@ -1,18 +1,11 @@
 # frozen_string_literal: true
 
 require_relative "support/simplecov" if ENV["CI"] || ENV["COVERAGE"]
-require_relative "support/redis"
 require_relative "support/sidekiq"
 
 require "rspec-parameterized"
 
 require "sidekiq-pauzer"
-
-class PauzerTestJob
-  include Sidekiq::Job
-
-  def perform; end
-end
 
 # Sleep given time before and after the block
 def with_sleep(time)

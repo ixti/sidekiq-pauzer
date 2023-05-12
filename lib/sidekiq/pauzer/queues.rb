@@ -2,8 +2,6 @@
 
 require "concurrent"
 
-require_relative "./adapters"
-
 module Sidekiq
   module Pauzer
     # @api internal
@@ -30,14 +28,14 @@ module Sidekiq
 
       # @param name [#to_s]
       def pause!(name)
-        Sidekiq.redis { |conn| Adapters[conn].add(conn, @redis_key, name.to_s) }
+        Sidekiq.redis { |conn| conn.call("SADD", @redis_key, name.to_s) }
 
         refresh
       end
 
       # @param name [#to_s]
       def unpause!(name)
-        Sidekiq.redis { |conn| Adapters[conn].remove(conn, @redis_key, name.to_s) }
+        Sidekiq.redis { |conn| conn.call("SREM", @redis_key, name.to_s) }
 
         refresh
       end
@@ -74,7 +72,12 @@ module Sidekiq
 
       def refresh
         @mutex.synchronize do
-          names = Sidekiq.redis { |conn| Adapters[conn].list(conn, @redis_key) }
+          names = Sidekiq.redis do |conn|
+            # Cursor is not atomic, so there may be duplicates because of
+            # concurrent update operations
+            # See: https://redis.io/commands/scan/#scan-guarantees
+            conn.sscan(@redis_key).to_a.uniq.each(&:freeze)
+          end
 
           @names.replace(names)
         end

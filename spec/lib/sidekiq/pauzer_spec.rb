@@ -1,17 +1,6 @@
 # frozen_string_literal: true
 
 RSpec.describe Sidekiq::Pauzer do
-  def sidekiq_fire_event(...)
-    if Sidekiq::Pauzer::Runtime::SIDEKIQ_SEVEN
-      Sidekiq.default_configuration.default_capsule.fire_event(...)
-    else
-      runner = Object.new
-      runner.instance_variable_set(:@config, Sidekiq)
-      runner.extend(Sidekiq::Component)
-      runner.fire_event(...)
-    end
-  end
-
   before { described_class.instance_variable_get(:@queues).__send__(:refresh) }
 
   it "registers startup handler" do
