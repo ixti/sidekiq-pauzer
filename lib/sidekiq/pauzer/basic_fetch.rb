@@ -42,7 +42,7 @@ module Sidekiq
       end
 
       def excluding_paused(queues)
-        queues - Pauzer.paused_queue_names.map { |name| "queue:#{name}" }
+        queues - Pauzer.paused_queues.map { |name| "queue:#{name}" }
       end
     end
   end

@@ -78,23 +78,11 @@ module Sidekiq
 
       # @example
       #   Sidekiq::Pauzer.pause!("minor")
-      #   Sidekiq::Pauzer.paused_queue_names # => ["minor"]
-      #
-      # @return [Array<String>]
-      def paused_queue_names
-        @queues.to_a
-      end
-
-      # @deprecated Use {.paused_queue_names} instead.
-      #   Will be removed in ‹2.0.0›.
-      #
-      # @example
-      #   Sidekiq::Pauzer.pause!("minor")
-      #   Sidekiq::Pauzer.paused_queues # => ["queue:minor"]
+      #   Sidekiq::Pauzer.paused_queues # => ["minor"]
       #
       # @return [Array<String>]
       def paused_queues
-        @queues.map { |name| "queue:#{name}" }
+        @queues.to_a
       end
 
       # Yields `config` for a block.
