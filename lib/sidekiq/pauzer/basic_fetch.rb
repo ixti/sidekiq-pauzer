@@ -13,29 +13,36 @@ module Sidekiq
 
       if Runtime::SIDEKIQ_SEVEN
         def queues_cmd
-          if @strictly_ordered_queues
-            @queues - Pauzer.paused_queues
-          else
-            permute = (@queues - Pauzer.paused_queues)
-            permute.shuffle!
-            permute.uniq!
-            permute
-          end
-        end
-      else
-        def queues_cmd
           queues =
             if @strictly_ordered_queues
-              @queues[0...-1] - Pauzer.paused_queues
+              @queues
             else
-              permute = (@queues - Pauzer.paused_queues)
+              permute = @queues.dup
               permute.shuffle!
               permute.uniq!
               permute
             end
 
-          queues << { timeout: Sidekiq::BasicFetch::TIMEOUT }
+          excluding_paused(queues)
         end
+      else
+        def queues_cmd
+          queues =
+            if @strictly_ordered_queues
+              @queues[0...-1]
+            else
+              permute = @queues.dup
+              permute.shuffle!
+              permute.uniq!
+              permute
+            end
+
+          excluding_paused(queues) << { timeout: Sidekiq::BasicFetch::TIMEOUT }
+        end
+      end
+
+      def excluding_paused(queues)
+        queues - Pauzer.paused_queue_names.map { |name| "queue:#{name}" }
       end
     end
   end

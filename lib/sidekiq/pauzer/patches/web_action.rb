@@ -8,6 +8,7 @@ require "sidekiq/web"
 module Sidekiq
   module Pauzer
     module Patches
+      # @private
       module WebAction
         PAUZER_QUEUES_TEMPLATE =
           ERB.new(File.read(File.expand_path("../../../../web/views/queues.erb", __dir__))).src

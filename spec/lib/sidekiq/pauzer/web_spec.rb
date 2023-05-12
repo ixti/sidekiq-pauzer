@@ -28,12 +28,12 @@ RSpec.describe Sidekiq::Pauzer::Web do
       post "/queues/foo", "pause" => "1"
       expect(last_response.status).to eq 302
       expect(redis_smembers(redis_key)).to contain_exactly("foo")
-      expect(Sidekiq::Pauzer.paused_queues).to contain_exactly("queue:foo")
+      expect(Sidekiq::Pauzer.paused_queue_names).to contain_exactly("foo")
 
       post "/queues/bar", "pause" => "1"
       expect(last_response.status).to eq 302
       expect(redis_smembers(redis_key)).to contain_exactly("foo", "bar")
-      expect(Sidekiq::Pauzer.paused_queues).to contain_exactly("queue:foo", "queue:bar")
+      expect(Sidekiq::Pauzer.paused_queue_names).to contain_exactly("foo", "bar")
     end
 
     it "allows unpausing queues" do
@@ -43,12 +43,12 @@ RSpec.describe Sidekiq::Pauzer::Web do
       post "/queues/foo", "unpause" => "1"
       expect(last_response.status).to eq 302
       expect(redis_smembers(redis_key)).to contain_exactly("bar")
-      expect(Sidekiq::Pauzer.paused_queues).to contain_exactly("queue:bar")
+      expect(Sidekiq::Pauzer.paused_queue_names).to contain_exactly("bar")
 
       post "/queues/bar", "unpause" => "1"
       expect(last_response.status).to eq 302
       expect(redis_smembers(redis_key)).to be_empty
-      expect(Sidekiq::Pauzer.paused_queues).to be_empty
+      expect(Sidekiq::Pauzer.paused_queue_names).to be_empty
     end
 
     it "allows clearing the queue" do

@@ -6,6 +6,7 @@ require "sidekiq/web"
 module Sidekiq
   module Pauzer
     module Patches
+      # @private
       module WebApplication
         class << self
           def apply!

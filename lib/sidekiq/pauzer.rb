@@ -35,13 +35,76 @@ module Sidekiq
     class << self
       extend Forwardable
 
-      def_delegators :@queues, :pause!, :unpause!, :paused?
+      # @!attribute [r] redis_key
+      #   @see Config#redis_key
+      #   @return [String]
       def_delegators :@config, :redis_key
 
-      def paused_queues
-        @queues.map { |queue| "queue:#{queue}" }
+      # @example
+      #   Sidekiq::Pauzer.pause!("minor")
+      #   Sidekiq::Pauzer.paused?("minor") # => true
+      #
+      # @param (see Queues#pause!)
+      # @return [void]
+      def pause!(name)
+        @queues.pause!(name)
+
+        nil
       end
 
+      # @example
+      #   Sidekiq::Pauzer.pause!("minor")
+      #   Sidekiq::Pauzer.paused?("minor") # => true
+      #   Sidekiq::Pauzer.unpause!("minor")
+      #   Sidekiq::Pauzer.paused?("minor") # => false
+      #
+      # @param (see Queues#unpause!)
+      # @return [void]
+      def unpause!(name)
+        @queues.unpause!(name)
+
+        nil
+      end
+
+      # @example
+      #   Sidekiq::Pauzer.pause!("minor")
+      #   Sidekiq::Pauzer.paused?("minor")  # => true
+      #   Sidekiq::Pauzer.paused?("threat") # => false
+      #
+      # @see Queues#paused?
+      def paused?(name)
+        @queues.paused?(name)
+      end
+
+      # @example
+      #   Sidekiq::Pauzer.pause!("minor")
+      #   Sidekiq::Pauzer.paused_queue_names # => ["minor"]
+      #
+      # @return [Array<String>]
+      def paused_queue_names
+        @queues.to_a
+      end
+
+      # @deprecated Use {.paused_queue_names} instead.
+      #   Will be removed in ‹2.0.0›.
+      #
+      # @example
+      #   Sidekiq::Pauzer.pause!("minor")
+      #   Sidekiq::Pauzer.paused_queues # => ["queue:minor"]
+      #
+      # @return [Array<String>]
+      def paused_queues
+        @queues.map { |name| "queue:#{name}" }
+      end
+
+      # Yields `config` for a block.
+      #
+      # @example
+      #   Sidekiq::Pauzer.configure do |config|
+      #     config.refresh_rate = 42
+      #   end
+      #
+      # @yieldparam config [Config]
       def configure
         MUTEX.synchronize do
           config = @config.dup

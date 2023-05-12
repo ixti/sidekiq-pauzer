@@ -15,7 +15,7 @@ module Sidekiq
       # @param config [Config]
       def initialize(config)
         @mutex     = Mutex.new
-        @queues    = []
+        @names     = []
         @redis_key = config.redis_key
         @refresher = initialize_refresher(config.refresh_rate)
       end
@@ -23,25 +23,29 @@ module Sidekiq
       def each(&block)
         return to_enum __method__ unless block
 
-        @mutex.synchronize { @queues.dup }.each(&block)
+        @mutex.synchronize { @names.dup }.each(&block)
 
         self
       end
 
-      def pause!(queue)
-        Sidekiq.redis { |conn| Adapters[conn].pause!(conn, @redis_key, queue.to_s) }
+      # @param name [#to_s]
+      def pause!(name)
+        Sidekiq.redis { |conn| Adapters[conn].add(conn, @redis_key, name.to_s) }
 
         refresh
       end
 
-      def unpause!(queue)
-        Sidekiq.redis { |conn| Adapters[conn].unpause!(conn, @redis_key, queue.to_s) }
+      # @param name [#to_s]
+      def unpause!(name)
+        Sidekiq.redis { |conn| Adapters[conn].remove(conn, @redis_key, name.to_s) }
 
         refresh
       end
 
-      def paused?(queue)
-        include?(queue.to_s)
+      # @param name [#to_s]
+      # @return [Boolean]
+      def paused?(name)
+        include?(name.to_s)
       end
 
       def start_refresher
@@ -70,11 +74,9 @@ module Sidekiq
 
       def refresh
         @mutex.synchronize do
-          paused_queues = Sidekiq.redis do |conn|
-            Adapters[conn].paused_queues(conn, @redis_key)
-          end
+          names = Sidekiq.redis { |conn| Adapters[conn].list(conn, @redis_key) }
 
-          @queues.replace(paused_queues)
+          @names.replace(names)
         end
 
         self

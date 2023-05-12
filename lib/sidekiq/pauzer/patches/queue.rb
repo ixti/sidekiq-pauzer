@@ -6,6 +6,7 @@ require "sidekiq/api"
 module Sidekiq
   module Pauzer
     module Patches
+      # @private
       module Queue
         def self.apply!
           Sidekiq::Queue.prepend(self)

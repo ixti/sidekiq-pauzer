@@ -16,15 +16,15 @@ module Sidekiq
             false
           end
 
-          def pause!(redis, key, queue)
+          def add(redis, key, queue)
             redis.call("SADD", key, queue)
           end
 
-          def unpause!(redis, key, queue)
+          def remove(redis, key, queue)
             redis.call("SREM", key, queue)
           end
 
-          def paused_queues(redis, key)
+          def list(redis, key)
             # Cursor is not atomic, so there may be duplicates because of
             # concurrent update operations
             # See: https://redis.io/commands/scan/#scan-guarantees
