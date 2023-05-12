@@ -85,6 +85,9 @@ module Sidekiq
         @queues.to_a
       end
 
+      # @deprecated Use {.paused_queues}
+      alias paused_queue_names paused_queues
+
       # Yields `config` for a block.
       #
       # @example
