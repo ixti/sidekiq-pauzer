@@ -1,15 +1,28 @@
 # frozen_string_literal: true
 
-require "rack/test"
 require "capybara/rspec"
+require "rack"
+require "rack/session"
+require "rack/test"
+require "securerandom"
 
+require "sidekiq/web"
 require "sidekiq/pauzer/web"
 
 RSpec.describe Sidekiq::Pauzer::Web do
   include Rack::Test::Methods
 
   def app
-    @app ||= Sidekiq::Web.new
+    @app ||= Rack::Builder.app do
+      use Rack::Session::Cookie, secret: SecureRandom.hex(32), same_site: true
+      run Sidekiq::Web
+    end
+  end
+
+  def csrf_token
+    SecureRandom.base64(Sidekiq::Web::CsrfProtection::TOKEN_LENGTH).tap do |csrf|
+      env("rack.session", { csrf: csrf })
+    end
   end
 
   let(:redis_key) { Sidekiq::Pauzer.redis_key }
@@ -25,12 +38,12 @@ RSpec.describe Sidekiq::Pauzer::Web do
 
   describe "POST /queues/:name" do
     it "allows pausing queues" do
-      post "/queues/foo", "pause" => "1"
+      post "/queues/foo", "pause" => "1", "authenticity_token" => csrf_token
       expect(last_response.status).to eq 302
       expect(redis_smembers(redis_key)).to contain_exactly("foo")
       expect(Sidekiq::Pauzer.paused_queues).to contain_exactly("foo")
 
-      post "/queues/bar", "pause" => "1"
+      post "/queues/bar", "pause" => "1", "authenticity_token" => csrf_token
       expect(last_response.status).to eq 302
       expect(redis_smembers(redis_key)).to contain_exactly("foo", "bar")
       expect(Sidekiq::Pauzer.paused_queues).to contain_exactly("foo", "bar")
@@ -40,19 +53,19 @@ RSpec.describe Sidekiq::Pauzer::Web do
       Sidekiq::Pauzer.pause!("foo")
       Sidekiq::Pauzer.pause!("bar")
 
-      post "/queues/foo", "unpause" => "1"
+      post "/queues/foo", "unpause" => "1", "authenticity_token" => csrf_token
       expect(last_response.status).to eq 302
       expect(redis_smembers(redis_key)).to contain_exactly("bar")
       expect(Sidekiq::Pauzer.paused_queues).to contain_exactly("bar")
 
-      post "/queues/bar", "unpause" => "1"
+      post "/queues/bar", "unpause" => "1", "authenticity_token" => csrf_token
       expect(last_response.status).to eq 302
       expect(redis_smembers(redis_key)).to be_empty
       expect(Sidekiq::Pauzer.paused_queues).to be_empty
     end
 
     it "allows clearing the queue" do
-      post "/queues/foo"
+      post "/queues/foo", "authenticity_token" => csrf_token
 
       expect(last_response.status).to eq 302
       expect(Sidekiq::Stats.new.queues).to eq({ "bar" => 1 })

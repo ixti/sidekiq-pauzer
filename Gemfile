@@ -9,6 +9,9 @@ group :test do
   gem "sidekiq"
 
   gem "capybara"
+
+  gem "rack"
+  gem "rack-session"
   gem "rack-test"
 
   gem "rspec"

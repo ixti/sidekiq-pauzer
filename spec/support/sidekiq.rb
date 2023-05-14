@@ -3,7 +3,7 @@
 require "sidekiq"
 require "sidekiq/cli"
 
-$TESTING = true # rubocop:disable Style/GlobalVars
+$TESTING = false # rubocop:disable Style/GlobalVars
 
 class PauzerTestJob
   include Sidekiq::Job
