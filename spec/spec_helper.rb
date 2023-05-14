@@ -5,7 +5,7 @@ require_relative "support/sidekiq"
 
 require "rspec-parameterized"
 
-require "sidekiq-pauzer"
+require "sidekiq/pauzer"
 
 # Sleep given time before and after the block
 def with_sleep(time)
