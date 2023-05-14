@@ -2,9 +2,6 @@
 
 source "https://rubygems.org"
 
-gem "appraisal"
-gem "rake"
-
 group :test do
   gem "sidekiq"
 
@@ -22,7 +19,10 @@ group :test do
   gem "rubocop-rspec", require: false
 end
 
-group :development, optional: true do
+group :development do
+  gem "appraisal"
+  gem "rake"
+
   gem "debug"
 
   gem "guard"

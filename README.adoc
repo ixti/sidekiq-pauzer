@@ -105,8 +105,7 @@ This library aims to support and work with following Sidekiq versions:
   bundle install
   bundle exec appraisal generate
   bundle exec appraisal install
-  bundle exec appraisal rspec
-  bundle exec rubocop
+  bundle exec rake
 
 
 == Contributing

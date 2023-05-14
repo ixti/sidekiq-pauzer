@@ -7,6 +7,7 @@ cache:
 before_script:
   - ruby -v
   - bundle config set path "vendor/ruby"
+  - bundle config set without development
   - bundle install --jobs $(nproc)
 
 .test:

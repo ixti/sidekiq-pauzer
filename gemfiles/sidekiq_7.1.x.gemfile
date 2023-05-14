@@ -2,9 +2,6 @@
 
 source "https://rubygems.org"
 
-gem "appraisal"
-gem "rake"
-
 group :test do
   gem "sidekiq", "~> 7.1.0"
   gem "capybara"
@@ -19,7 +16,9 @@ group :test do
   gem "rubocop-rspec", require: false
 end
 
-group :development, optional: true do
+group :development do
+  gem "appraisal"
+  gem "rake"
   gem "debug"
   gem "guard"
   gem "guard-rspec"
