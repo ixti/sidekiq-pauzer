@@ -23,7 +23,7 @@ group :development do
   gem "appraisal"
   gem "rake"
 
-  gem "debug"
+  gem "debug", platforms: %i[ruby]
 
   gem "guard"
   gem "guard-rspec"

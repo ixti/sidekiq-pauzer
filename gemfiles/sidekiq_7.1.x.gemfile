@@ -19,7 +19,7 @@ end
 group :development do
   gem "appraisal"
   gem "rake"
-  gem "debug"
+  gem "debug", platforms: [:ruby]
   gem "guard"
   gem "guard-rspec"
 end

@@ -1,6 +1,8 @@
-/.bundle
 /tmp
+
+/.bundle
 /Gemfile.lock
+/gemfiles/.bundle
 /gemfiles/*.lock
 
 # Built gems
