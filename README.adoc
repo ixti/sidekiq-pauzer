@@ -77,7 +77,6 @@ This library aims to support and is tested against the following Ruby versions:
 * Ruby 3.0.x
 * Ruby 3.1.x
 * Ruby 3.2.x
-* JRuby 9.4.x.x
 
 If something doesn't work on one of these versions, it's a bug.
 

@@ -6,10 +6,6 @@ cache:
 
 before_script:
   - ruby -v
-  - |
-    if ! command -v git &> /dev/null; then
-      apt-get update -qq && apt-get install -y -qq git
-    fi
   - bundle config set path "vendor/ruby"
   - bundle config set without development
   - bundle install --jobs $(nproc)
@@ -38,7 +34,7 @@ rspec:
   parallel:
     matrix:
       - redis: [ "redis:6.0", "redis:6.2", "redis:7.0" ]
-        ruby:  [ "ruby:2.7", "ruby:3.0", "ruby:3.1", "ruby:3.2", "jruby:9.4" ]
+        ruby:  [ "ruby:2.7", "ruby:3.0", "ruby:3.1", "ruby:3.2" ]
         BUNDLE_GEMFILE:
           - gemfiles/sidekiq_7.0.x.gemfile
           - gemfiles/sidekiq_7.1.x.gemfile
