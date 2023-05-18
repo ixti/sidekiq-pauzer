@@ -8,6 +8,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [3.1.0] - 2023-05-18
+
+### Changed
+
+- Remove synchronization around internal queues list dup/replace, as those are
+  thread-safe. This makes calling `Sidekiq::Pauzer.paused_queues` faster.
+
 
 ## [3.0.1] - 2023-05-14
 
@@ -63,7 +70,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Initial release that supports sidekiq >= 6.5.0
 
 
-[unreleased]: https://gitlab.com/ixti/sidekiq-pauzer/-/compare/v3.0.1...main
+[unreleased]: https://gitlab.com/ixti/sidekiq-pauzer/-/compare/v3.1.0...main
+[3.1,0]: https://gitlab.com/ixti/sidekiq-pauzer/-/compare/v3.0.1...v3.1.0
 [3.0.1]: https://gitlab.com/ixti/sidekiq-pauzer/-/compare/v3.0.0...v3.0.1
 [3.0.0]: https://gitlab.com/ixti/sidekiq-pauzer/-/compare/v2.1.0...v3.0.0
 [2.1.0]: https://gitlab.com/ixti/sidekiq-pauzer/-/compare/v2.0.0...v2.1.0
