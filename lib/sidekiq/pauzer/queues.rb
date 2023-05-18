@@ -14,8 +14,7 @@ module Sidekiq
 
       # @param config [Config]
       def initialize(config)
-        @mutex     = Mutex.new
-        @names     = []
+        @names     = Concurrent::Array.new
         @redis_key = config.redis_key
         @refresher = initialize_refresher(config.refresh_rate)
       end
@@ -23,7 +22,7 @@ module Sidekiq
       def each(&block)
         return to_enum __method__ unless block
 
-        @mutex.synchronize { @names.dup }.each(&block)
+        @names.dup.each(&block)
 
         self
       end
@@ -73,11 +72,7 @@ module Sidekiq
       end
 
       def refresh
-        @mutex.synchronize do
-          names = Sidekiq.redis { |conn| Adapters[conn].list(conn, @redis_key) }
-
-          @names.replace(names)
-        end
+        @names.replace(Sidekiq.redis { |conn| Adapters[conn].list(conn, @redis_key) })
 
         self
       end
