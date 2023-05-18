@@ -12,8 +12,7 @@ module Sidekiq
 
       # @param config [Config]
       def initialize(config)
-        @mutex     = Mutex.new
-        @names     = []
+        @names     = Concurrent::Array.new
         @redis_key = config.redis_key
         @refresher = initialize_refresher(config.refresh_rate)
       end
@@ -21,7 +20,7 @@ module Sidekiq
       def each(&block)
         return to_enum __method__ unless block
 
-        @mutex.synchronize { @names.dup }.each(&block)
+        @names.dup.each(&block)
 
         self
       end
@@ -71,16 +70,14 @@ module Sidekiq
       end
 
       def refresh
-        @mutex.synchronize do
-          names = Sidekiq.redis do |conn|
-            # Cursor is not atomic, so there may be duplicates because of
-            # concurrent update operations
-            # See: https://redis.io/commands/scan/#scan-guarantees
-            conn.sscan(@redis_key).to_a.uniq.each(&:freeze)
-          end
-
-          @names.replace(names)
+        names = Sidekiq.redis do |conn|
+          # Cursor is not atomic, so there may be duplicates because of
+          # concurrent update operations
+          # See: https://redis.io/commands/scan/#scan-guarantees
+          conn.sscan(@redis_key).to_a.uniq.each(&:freeze)
         end
+
+        @names.replace(names)
 
         self
       end
