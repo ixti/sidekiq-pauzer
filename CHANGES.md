@@ -32,6 +32,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Remove `Sidekiq::Pauzer.paused_queue_names`.
 
 
+## [2.2.0] - 2023-05-18
+
+### Changed
+
+- Backport synchronization removal around internal queues list dup/replace
+  from [v3.1.0](https://gitlab.com/ixti/sidekiq-pauzer/-/tree/v3.1.0)
+
+
 ## [2.1.0] - 2023-05-12
 
 ### Changed
