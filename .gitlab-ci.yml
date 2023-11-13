@@ -32,5 +32,5 @@ rspec:
   script:    scripts/ci-rspec
   parallel:
     matrix:
-      - redis: [ "redis:6.0", "redis:6.2", "redis:7.0" ]
+      - redis: [ "redis:6.0", "redis:6.2", "redis:7.0", "redis:7.2" ]
         ruby:  [ "ruby:3.0", "ruby:3.1", "ruby:3.2" ]
