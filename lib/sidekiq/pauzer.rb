@@ -12,18 +12,18 @@ require_relative "./pauzer/version"
 
 begin
   require "sidekiq-ent/version"
-  raise "sidekiq-pauzer is incompatible with Sidekiq Enterprise"
 rescue LoadError
   # All good - no compatibility issues
 end
 
 begin
   require "sidekiq/pro/version"
-
-  raise "sidekiq-pauzer is incompatible with Sidekiq Pro"
 rescue LoadError
   # All good - no compatibility issues
 end
+
+raise "sidekiq-pauzer is incompatible with Sidekiq Pro"        if Sidekiq.pro?
+raise "sidekiq-pauzer is incompatible with Sidekiq Enterprise" if Sidekiq.ent?
 
 module Sidekiq
   module Pauzer
