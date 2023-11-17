@@ -8,10 +8,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+
+## [4.0.0] - 2023-11-17
+
 ### Changed
 
 - (BREAKING) Replace Sidekiq::Pauzer::BasicFetch with mixin that is prepended to
   Sidekiq::BasicFetch, thus no need to configure fetcher class directly anymore.
+
 
 ## [3.1.0] - 2023-05-18
 
@@ -83,7 +87,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Initial release that supports sidekiq >= 6.5.0
 
 
-[unreleased]: https://gitlab.com/ixti/sidekiq-pauzer/-/compare/v3.1.0...main
+[unreleased]: https://gitlab.com/ixti/sidekiq-pauzer/-/compare/v4.0.0...main
+[4.0.0]: https://gitlab.com/ixti/sidekiq-pauzer/-/compare/v3.1.0...v4.0.0
 [3.1.0]: https://gitlab.com/ixti/sidekiq-pauzer/-/compare/v3.0.1...v3.1.0
 [3.0.1]: https://gitlab.com/ixti/sidekiq-pauzer/-/compare/v3.0.0...v3.0.1
 [3.0.0]: https://gitlab.com/ixti/sidekiq-pauzer/-/compare/v2.1.0...v3.0.0
