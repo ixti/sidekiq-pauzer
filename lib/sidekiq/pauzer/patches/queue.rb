@@ -8,10 +8,6 @@ module Sidekiq
     module Patches
       # @private
       module Queue
-        def self.apply!
-          Sidekiq::Queue.prepend(self)
-        end
-
         def paused?
           Pauzer.paused?(name)
         end
@@ -29,3 +25,5 @@ module Sidekiq
     end
   end
 end
+
+Sidekiq::Queue.prepend(Sidekiq::Pauzer::Patches::Queue)

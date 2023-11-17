@@ -8,6 +8,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- (BREAKING) Replace Sidekiq::Pauzer::BasicFetch with mixin that is prepended to
+  Sidekiq::BasicFetch, thus no need to configure fetcher class directly anymore.
+
 ## [3.1.0] - 2023-05-18
 
 ### Changed

@@ -4,8 +4,8 @@ require "forwardable"
 require "sidekiq"
 require "sidekiq/api"
 
-require_relative "./pauzer/basic_fetch"
 require_relative "./pauzer/config"
+require_relative "./pauzer/patches/basic_fetch"
 require_relative "./pauzer/patches/queue"
 require_relative "./pauzer/queues"
 require_relative "./pauzer/version"
@@ -135,5 +135,3 @@ module Sidekiq
     config.on(:shutdown) { Pauzer.shutdown }
   end
 end
-
-Sidekiq::Pauzer::Patches::Queue.apply!

@@ -1,10 +1,10 @@
 # frozen_string_literal: true
 
-RSpec.describe Sidekiq::Pauzer::BasicFetch do
-  subject(:fetch) do
+RSpec.describe Sidekiq::Pauzer::Patches::BasicFetch do
+  let(:fetch) do
     config = Sidekiq::Config.new
     config.queues = queues
-    described_class.new(config.default_capsule)
+    Sidekiq::BasicFetch.new(config.default_capsule)
   end
 
   let(:queues) { ["foo,1", "bar,10", "baz,100"] }
@@ -12,6 +12,13 @@ RSpec.describe Sidekiq::Pauzer::BasicFetch do
   before do
     Sidekiq::Pauzer.pause!(:foo)
     stub_const("Sidekiq::BasicFetch::TIMEOUT", 0.1)
+  end
+
+  it "is prepended to Sidekiq::BasicFetch" do
+    ancestors = Sidekiq::BasicFetch.ancestors
+
+    expect(ancestors).to include(described_class)
+    expect(ancestors.index(described_class)).to be < ancestors.index(Sidekiq::BasicFetch)
   end
 
   describe "#retrieve_work" do

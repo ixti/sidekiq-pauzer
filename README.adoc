@@ -28,10 +28,6 @@ Sidekiq::Pauzer.configure do |config|
   # Default: 10
   config.refresh_rate = 15
 end
-
-Sidekiq.configure_server do |config|
-  config[:fetch_class] = Sidekiq::Pauzer::BasicFetch
-end
 ----
 
 === API
