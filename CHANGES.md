@@ -9,6 +9,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 
+## [4.1.0] - 2023-11-22
+
+### Fixed
+
+- Use SMEMBERS instead of SSCAN, as amount of elements will never be huge.
+- Improve internal cache handling, should help with random web UI issues.
+
+
 ## [4.0.0] - 2023-11-17
 
 ### Changed

@@ -1,8 +1,6 @@
 # frozen_string_literal: true
 
 RSpec.describe Sidekiq::Pauzer do
-  before { described_class.instance_variable_get(:@queues).__send__(:refresh) }
-
   it "registers startup handler" do
     allow(described_class).to receive(:startup)
 

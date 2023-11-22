@@ -28,8 +28,6 @@ RSpec.describe Sidekiq::Pauzer::Web do
   let(:redis_key) { Sidekiq::Pauzer.redis_key }
 
   before do
-    Sidekiq::Pauzer.instance_variable_get(:@queues).__send__(:refresh)
-
     Sidekiq::Client.push("queue" => :foo, "class" => PauzerTestJob, "args" => [])
     Sidekiq::Client.push("queue" => :bar, "class" => PauzerTestJob, "args" => [])
 
