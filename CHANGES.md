@@ -9,6 +9,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 
+## [4.2.0] - 2023-11-23
+
+### Fixed
+
+- Fix UI issues for good this time by ensuring paused queues refresher is
+  running everywhere.
+
+
 ## [4.1.0] - 2023-11-22
 
 ### Fixed
@@ -95,7 +103,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Initial release that supports sidekiq >= 6.5.0
 
 
-[unreleased]: https://gitlab.com/ixti/sidekiq-pauzer/-/compare/v4.1.0...main
+[unreleased]: https://gitlab.com/ixti/sidekiq-pauzer/-/compare/v4.2.0...main
+[4.2.0]: https://gitlab.com/ixti/sidekiq-pauzer/-/compare/v4.1.0...v4.2.0
 [4.1.0]: https://gitlab.com/ixti/sidekiq-pauzer/-/compare/v4.0.0...v4.1.0
 [4.0.0]: https://gitlab.com/ixti/sidekiq-pauzer/-/compare/v3.1.0...v4.0.0
 [3.1.0]: https://gitlab.com/ixti/sidekiq-pauzer/-/compare/v3.0.1...v3.1.0
