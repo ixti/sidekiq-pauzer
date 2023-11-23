@@ -122,10 +122,8 @@ module Sidekiq
       private
 
       def reinit_queues
-        start_refresher = @queues.refresher_running?
         @queues.stop_refresher
         @queues = Queues.new(@config)
-        @queues.start_refresher if start_refresher
       end
     end
   end

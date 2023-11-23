@@ -8,8 +8,6 @@ module Sidekiq
     class Queues
       include Enumerable
 
-      class Refresher < Concurrent::TimerTask; end
-
       # @param config [Config]
       def initialize(config)
         @mutex     = Mutex.new
@@ -21,6 +19,7 @@ module Sidekiq
       def each(&block)
         return to_enum __method__ unless block
 
+        start_refresher unless refresher_running?
         @names.each(&block)
 
         self
@@ -63,7 +62,7 @@ module Sidekiq
       private
 
       def initialize_refresher(refresh_rate)
-        Refresher.new(execution_interval: refresh_rate, run_now: true) do
+        Concurrent::TimerTask.new(execution_interval: refresh_rate, run_now: true) do
           refresh
         end
       end

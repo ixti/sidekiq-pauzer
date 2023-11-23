@@ -5,6 +5,8 @@ RSpec.describe Sidekiq::Pauzer::Queues do
 
   let(:config) { Sidekiq::Pauzer::Config.new }
 
+  after { queues.stop_refresher }
+
   it { is_expected.to be_an Enumerable }
 
   describe "#each" do
@@ -106,31 +108,16 @@ RSpec.describe Sidekiq::Pauzer::Queues do
   end
 
   describe "#start_refresher" do
-    before { config.refresh_rate = 0.1 }
-
-    after { queues.stop_refresher }
-
     it "starts asynchronous refresher" do
-      queues.start_refresher
-
-      expect { with_sleep(0.2) { redis_sadd(config.redis_key, "foo") } }
-        .to change(queues, :to_a).to(contain_exactly("foo"))
+      expect { queues.start_refresher }.to change(queues, :refresher_running?).to(true)
     end
   end
 
   describe "#stop_refresher" do
-    before do
-      config.refresh_rate = 0.1
-      queues.start_refresher
-    end
-
-    after { queues.stop_refresher }
-
     it "stops asynchronous refresher" do
-      queues.stop_refresher
+      queues.start_refresher
 
-      expect { with_sleep(0.2) { redis_sadd(config.redis_key, "foo") } }
-        .to keep_unchanged(queues, :to_a)
+      expect { queues.stop_refresher }.to change(queues, :refresher_running?).to(false)
     end
   end
 
@@ -142,10 +129,7 @@ RSpec.describe Sidekiq::Pauzer::Queues do
     it { is_expected.to be false }
 
     context "when refresher was stopped" do
-      before do
-        queues.start_refresher
-        queues.stop_refresher
-      end
+      before { queues.stop_refresher }
 
       it { is_expected.to be false }
     end

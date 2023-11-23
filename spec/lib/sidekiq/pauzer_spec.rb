@@ -109,57 +109,23 @@ RSpec.describe Sidekiq::Pauzer do
       expect { |b| described_class.configure(&b) }
         .to yield_with_args(have_attributes(key_prefix: "foobar:", refresh_rate: 42))
     end
-
-    it "restarts queues refresher if it was already started" do
-      redis_sadd(described_class.redis_key, "foo")
-
-      described_class.configure do |c|
-        c.key_prefix   = "v2:"
-        c.refresh_rate = 0.1
-      end
-
-      described_class.startup
-      described_class.configure { |c| c.key_prefix = nil }
-
-      sleep 0.2
-
-      expect(described_class.paused_queues).to contain_exactly("foo")
-    end
   end
 
   describe ".startup" do
-    before do
-      described_class.configure do |config|
-        config.refresh_rate = 0.1
-      end
-    end
-
     after { described_class.shutdown }
 
     it "starts asynchronous refresher" do
-      described_class.startup
-
-      expect { with_sleep(0.2) { redis_sadd(described_class.redis_key, "foo") } }
-        .to change(described_class, :paused_queues).to(contain_exactly("foo"))
+      expect { described_class.startup }
+        .to change { described_class.instance_variable_get(:@queues).refresher_running? }.to(true)
     end
   end
 
   describe ".shutdown" do
-    before do
-      described_class.configure do |config|
-        config.refresh_rate = 0.1
-      end
-
-      described_class.startup
-    end
-
-    after { described_class.shutdown }
+    before { described_class.startup }
 
     it "stops asynchronous refresher" do
-      described_class.shutdown
-
-      expect { with_sleep(0.2) { redis_sadd(described_class.redis_key, "foo") } }
-        .to keep_unchanged(described_class, :paused_queues)
+      expect { described_class.shutdown }
+        .to change { described_class.instance_variable_get(:@queues).refresher_running? }.to(false)
     end
   end
 end
