@@ -30,6 +30,15 @@ Sidekiq::Pauzer.configure do |config|
 end
 ----
 
+When running in forked environment (e.g., Puma web server), you also need to
+call `Sidekiq::Pauzer.startup` on fork:
+
+[source, ruby]
+----
+# file: config/puma.rb
+on_worker_boot { Sidekiq::Pauzer.startup }
+----
+
 === API
 
 This gem enhances Sidekiq's Queue API with:

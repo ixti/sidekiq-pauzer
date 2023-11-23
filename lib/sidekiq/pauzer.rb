@@ -108,7 +108,7 @@ module Sidekiq
       end
 
       def startup
-        MUTEX.synchronize { @queues.start_refresher }
+        MUTEX.synchronize { reinit_queues.start_refresher }
 
         self
       end
