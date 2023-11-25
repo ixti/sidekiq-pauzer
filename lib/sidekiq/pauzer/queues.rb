@@ -20,32 +20,36 @@ module Sidekiq
 
       # @param config [Config]
       def initialize(config)
-        @names      = [].freeze
-        @config     = config
-        @init_mutex = Mutex.new
-        @poll_mutex = Mutex.new
-        @refresher  = nil
+        @config          = config
+        @names           = [].freeze
+        @names_mutex     = Mutex.new
+        @refresher       = nil
+        @refresher_mutex = Mutex.new
       end
 
       def each(&block)
         return to_enum __method__ unless block
 
         start_refresher unless refresher_running?
-        @poll_mutex.synchronize { @names.dup }.each(&block)
+        @names_mutex.synchronize { @names.dup }.each(&block)
 
         self
       end
 
       # @param name [#to_s]
+      # @return [Queues] self
       def pause!(name)
-        Sidekiq.redis { |conn| conn.call("SADD", redis_key, name.to_s) }
+        redis_call("SADD", redis_key, name.to_s)
         refresh
+        self
       end
 
       # @param name [#to_s]
+      # @return [Queues] self
       def unpause!(name)
-        Sidekiq.redis { |conn| conn.call("SREM", redis_key, name.to_s) }
+        redis_call("SREM", redis_key, name.to_s)
         refresh
+        self
       end
 
       # @param name [#to_s]
@@ -55,19 +59,16 @@ module Sidekiq
       end
 
       def start_refresher
-        @init_mutex.synchronize do
-          @refresher ||= Concurrent::TimerTask.new(execution_interval: refresh_rate, run_now: true) do
-            refresh
-          end
-
-          @refresher.execute
+        @refresher_mutex.synchronize do
+          @refresher&.shutdown
+          @refresher = Concurrent::TimerTask.execute(execution_interval: refresh_rate, run_now: true) { refresh }
         end
 
         self
       end
 
       def stop_refresher
-        @init_mutex.synchronize do
+        @refresher_mutex.synchronize do
           @refresher&.shutdown
           @refresher = nil
         end
@@ -76,17 +77,26 @@ module Sidekiq
       end
 
       def refresher_running?
-        @init_mutex.synchronize { @refresher&.running? || false }
+        @refresher_mutex.synchronize do
+          @refresher&.running? || false
+        end
       end
 
       private
 
+      # @return [nil]
       def refresh
-        names = Sidekiq.redis { |conn| conn.call("SMEMBERS", redis_key).to_a }
+        names = redis_call("SMEMBERS", redis_key).to_a
 
-        @poll_mutex.synchronize { @names = names.each(&:freeze).freeze }
+        @names_mutex.synchronize do
+          @names = names.each(&:freeze).freeze
+        end
 
-        self
+        nil
+      end
+
+      def redis_call(...)
+        Sidekiq.redis { |conn| conn.call(...) }
       end
     end
   end
