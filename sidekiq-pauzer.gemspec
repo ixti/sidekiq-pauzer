@@ -9,7 +9,7 @@ Gem::Specification.new do |spec|
   spec.email         = ["alexey@zapparov.com"]
 
   spec.summary       = "Enhance Sidekiq with queue pausing"
-  spec.homepage      = "https://gitlab.com/ixti/sidekiq-pauzer"
+  spec.homepage      = "https://github.com/ixti/sidekiq-pauzer"
   spec.license       = "MIT"
 
   spec.metadata["homepage_uri"]          = spec.homepage
