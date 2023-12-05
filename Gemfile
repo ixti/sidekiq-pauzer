@@ -16,7 +16,9 @@ group :test do
 
   gem "rspec"
   gem "rspec-parameterized"
+
   gem "simplecov"
+  gem "simplecov-cobertura"
 
   gem "rubocop", require: false
   gem "rubocop-capybara", require: false

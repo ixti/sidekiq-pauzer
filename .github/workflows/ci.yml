@@ -6,10 +6,6 @@ on:
   pull_request:
     branches: [ main ]
 
-env:
-  BUNDLE_WITHOUT: "development"
-  JRUBY_OPTS: "--dev --debug"
-
 jobs:
   test:
     name: "rspec (ruby:${{ matrix.ruby }})"
@@ -40,8 +36,37 @@ jobs:
           ruby-version: ${{ matrix.ruby }}
           bundler-cache: true
 
-      - name: RSpec
-        run: scripts/ci-rspec
+      - run: bundle exec rake test
+
+      - name: "Upload coverage results"
+        uses: actions/upload-artifact@v3
+        with:
+          name: coverage-${{ matrix.ruby }}
+          path: coverage/.resultset.json
+
+  test-coverage:
+    runs-on: ubuntu-latest
+    needs: test
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: ruby-3.2
+          bundler-cache: true
+
+      - name: "Download coverage results"
+        uses: actions/download-artifact@v3
+        with:
+          path: coverage
+
+      - run: bundle exec rake test:coverage
+
+      - name: Upload coverage reports to Codecov
+        uses: codecov/codecov-action@v3
+        env:
+          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
 
   lint:
     runs-on: ubuntu-latest
@@ -54,5 +79,4 @@ jobs:
           ruby-version: ruby-3.2
           bundler-cache: true
 
-      - name: Rubocop
-        run: bundle exec rubocop --format progress --color
+      - run: bundle exec rake lint

@@ -7,3 +7,7 @@ RSpec/MultipleExpectations:
 
 RSpec/NamedSubject:
   Enabled: false
+
+RSpec/BeNil:
+  Enabled: true
+  EnforcedStyle: be
