@@ -8,7 +8,8 @@ require "sidekiq/pauzer"
 class PauzerDemoJob
   include Sidekiq::Job
 
-  def perform
+  def perform(n)
+    puts "performing #{n}..."
     sleep 1
   end
 end
