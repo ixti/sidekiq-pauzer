@@ -33,5 +33,5 @@ Gem::Specification.new do |spec|
   spec.required_ruby_version = ">= 3.0"
 
   spec.add_runtime_dependency "concurrent-ruby", ">= 1.2.0"
-  spec.add_runtime_dependency "sidekiq", ">= 7.0"
+  spec.add_runtime_dependency "sidekiq", ">= 7.2"
 end

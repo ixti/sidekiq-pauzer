@@ -16,6 +16,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Removed
 
 - (BREAKING) Remove `Sidekiq::Pauzer::Config#key_prefix`
+- (BREAKING) Drop Sidekiq 7.0 support
+- (BREAKING) Drop Sidekiq 7.1 support
 
 
 ## [4.2.1] - 2023-11-26
