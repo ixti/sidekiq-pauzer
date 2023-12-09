@@ -8,6 +8,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+
+## [5.0.0] - 2023-12-09
+
 ### Changed
 
 - Default `Sidekiq::Pauzer::Config#refresh_rate` is now 5 seconds (was 10)
@@ -121,7 +124,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Initial release that supports sidekiq >= 6.5.0
 
 
-[unreleased]: https://github.com/ixti/sidekiq-pauzer/compare/v4.2.1...main
+[unreleased]: https://github.com/ixti/sidekiq-pauzer/compare/v5.0.0...main
+[5.0.0]: https://github.com/ixti/sidekiq-pauzer/compare/v4.2.1...v5.0.0
 [4.2.1]: https://github.com/ixti/sidekiq-pauzer/compare/v4.2.0...v4.2.1
 [4.2.0]: https://github.com/ixti/sidekiq-pauzer/compare/v4.1.0...v4.2.0
 [4.1.0]: https://github.com/ixti/sidekiq-pauzer/compare/v4.0.0...v4.1.0
