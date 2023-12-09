@@ -40,7 +40,7 @@ RSpec.describe Sidekiq::Pauzer::Patches::Queue do
       Sidekiq::Pauzer.unpause!("foo")
 
       expect { subject }
-        .to change { redis_smembers(Sidekiq::Pauzer::REDIS_KEY) }.to(contain_exactly("foo"))
+        .to change { redis_smembers }.to(contain_exactly("foo"))
         .and change { Sidekiq::Pauzer.paused? "foo" }.to(true)
     end
   end
@@ -60,7 +60,7 @@ RSpec.describe Sidekiq::Pauzer::Patches::Queue do
       Sidekiq::Pauzer.pause!("foo")
 
       expect { subject }
-        .to change { redis_smembers(Sidekiq::Pauzer::REDIS_KEY) }.to(be_empty)
+        .to change { redis_smembers }.to(be_empty)
         .and change { Sidekiq::Pauzer.paused? "foo" }.to(false)
     end
   end

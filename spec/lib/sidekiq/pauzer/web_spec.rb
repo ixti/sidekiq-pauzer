@@ -36,13 +36,13 @@ RSpec.describe Sidekiq::Pauzer::Web do
     it "allows pausing queues" do
       post "/queues/foo", "pause" => "1", "authenticity_token" => csrf_token
       expect(last_response.status).to eq 302
-      expect(redis_smembers(Sidekiq::Pauzer::REDIS_KEY)).to contain_exactly("foo")
-      expect(Sidekiq::Pauzer.paused_queues).to contain_exactly("foo")
+      expect(Sidekiq::Pauzer.paused?("foo")).to be true
+      expect(Sidekiq::Pauzer.paused?("bar")).to be false
 
       post "/queues/bar", "pause" => "1", "authenticity_token" => csrf_token
       expect(last_response.status).to eq 302
-      expect(redis_smembers(Sidekiq::Pauzer::REDIS_KEY)).to contain_exactly("foo", "bar")
-      expect(Sidekiq::Pauzer.paused_queues).to contain_exactly("foo", "bar")
+      expect(Sidekiq::Pauzer.paused?("foo")).to be true
+      expect(Sidekiq::Pauzer.paused?("bar")).to be true
     end
 
     it "allows unpausing queues" do
@@ -51,13 +51,13 @@ RSpec.describe Sidekiq::Pauzer::Web do
 
       post "/queues/foo", "unpause" => "1", "authenticity_token" => csrf_token
       expect(last_response.status).to eq 302
-      expect(redis_smembers(Sidekiq::Pauzer::REDIS_KEY)).to contain_exactly("bar")
-      expect(Sidekiq::Pauzer.paused_queues).to contain_exactly("bar")
+      expect(Sidekiq::Pauzer.paused?("foo")).to be false
+      expect(Sidekiq::Pauzer.paused?("bar")).to be true
 
       post "/queues/bar", "unpause" => "1", "authenticity_token" => csrf_token
       expect(last_response.status).to eq 302
-      expect(redis_smembers(Sidekiq::Pauzer::REDIS_KEY)).to be_empty
-      expect(Sidekiq::Pauzer.paused_queues).to be_empty
+      expect(Sidekiq::Pauzer.paused?("foo")).to be false
+      expect(Sidekiq::Pauzer.paused?("bar")).to be false
     end
 
     it "allows clearing the queue" do

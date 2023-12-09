@@ -1,30 +1,71 @@
 # frozen_string_literal: true
 
 RSpec.describe Sidekiq::Pauzer::Queues do
-  subject(:queues) { described_class.new(config) }
+  subject(:queues) { described_class.new(refresh_rate, repository: repository) }
 
-  let(:config) { Sidekiq::Pauzer::Config.new }
+  let(:refresh_rate) { 0.1 }
+  let(:repository)   { Sidekiq::Pauzer::Repository.new }
 
   after { queues.stop_refresher }
 
   it { is_expected.to be_an Enumerable }
 
-  describe "#each" do
+  it "polls repository regularily" do
+    allow(repository).to receive(:to_a).and_call_original
+
+    queues.start_refresher
+    sleep(4 * refresh_rate)
+
+    expect(repository).to have_received(:to_a).at_least(4).times
+    expect(repository).to have_received(:to_a).at_most(5).times
+  end
+
+  context "when repository poll fails" do
     before do
-      queues.pause! "foo"
-      queues.pause! "bar"
-    end
+      attempt = 0
 
-    context "with block given" do
-      subject { queues.each { |q| yielded_results << q } }
+      allow(repository).to receive(:to_a).and_wrap_original do |m|
+        attempt += 1
 
-      let(:yielded_results) { [] }
+        if attempt <= 4
+          raise "nope" if attempt.odd?
 
-      it "yields each paused queue" do
-        expect { subject }.to change { yielded_results }.to(match_array(%w[foo bar]))
+          repository.add("q#{attempt}")
+        end
+
+        m.call
       end
 
-      it { is_expected.to be queues }
+      queues.start_refresher
+      sleep(4 * refresh_rate)
+    end
+
+    it "keeps refresher runnning" do
+      expect(queues.refresher_running?).to be true
+    end
+
+    it "keeps updating the local cache" do
+      expect(queues.to_a).to contain_exactly("q2", "q4")
+    end
+  end
+
+  describe "#each" do
+    subject { queues.each { |q| yielded_results << q } }
+
+    let(:yielded_results) { [] }
+
+    before do
+      repository.add("foo")
+      repository.add("bar")
+    end
+
+    it { is_expected.to be queues }
+
+    it "yields each paused queue" do
+      queues.start_refresher
+      sleep refresh_rate
+
+      expect { subject }.to change { yielded_results }.to(match_array(%w[foo bar]))
     end
 
     context "without block given" do
@@ -32,77 +73,11 @@ RSpec.describe Sidekiq::Pauzer::Queues do
 
       it { is_expected.to be_an Enumerator }
 
-      it { is_expected.to match_array %w[foo bar] }
-    end
-  end
+      it "returns each paused queue" do
+        queues.start_refresher
+        sleep refresh_rate
 
-  describe "#pause!" do
-    it "adds queue to the paused list" do
-      expect { %w[foo bar].each { |q| queues.pause!(q) } }
-        .to change { redis_smembers(Sidekiq::Pauzer::REDIS_KEY) }.to(match_array(%w[foo bar]))
-        .and change(queues, :to_a).to(match_array(%w[foo bar]))
-    end
-
-    it "support queue name given as Symbol" do
-      expect { %i[foo bar].each { |q| queues.pause!(q) } }
-        .to change { redis_smembers(Sidekiq::Pauzer::REDIS_KEY) }.to(match_array(%w[foo bar]))
-        .and change(queues, :to_a).to(match_array(%w[foo bar]))
-    end
-
-    it "avoids duplicates" do
-      queues.pause! "foo"
-
-      expect { %w[foo bar].each { |q| queues.pause!(q) } }
-        .to change { redis_smembers(Sidekiq::Pauzer::REDIS_KEY) }.to(match_array(%w[foo bar]))
-        .and change(queues, :to_a).to(match_array(%w[foo bar]))
-    end
-  end
-
-  describe "#unpause!" do
-    before do
-      queues.pause! "foo"
-      queues.pause! "bar"
-    end
-
-    it "removes queue from the paused list" do
-      expect { queues.unpause!("foo") }
-        .to change { redis_smembers(Sidekiq::Pauzer::REDIS_KEY) }.to(contain_exactly("bar"))
-        .and change(queues, :to_a).to(contain_exactly("bar"))
-    end
-
-    it "support queue name given as Symbol" do
-      expect { queues.unpause!(:foo) }
-        .to change { redis_smembers(Sidekiq::Pauzer::REDIS_KEY) }.to(contain_exactly("bar"))
-        .and change(queues, :to_a).to(contain_exactly("bar"))
-    end
-
-    it "skips non-paused queues" do
-      expect { queues.unpause!("baz") }
-        .to keep_unchanged { redis_smembers(Sidekiq::Pauzer::REDIS_KEY) }
-        .and keep_unchanged(queues, :to_a)
-    end
-  end
-
-  describe "#paused?" do
-    context "when queue is not paused" do
-      it "returns ‹false›" do
-        expect(queues.paused?("foo")).to be false
-      end
-
-      it "support queue name given as Symbol" do
-        expect(queues.paused?(:foo)).to be false
-      end
-    end
-
-    context "when queue is paused" do
-      before { queues.pause!("foo") }
-
-      it "returns ‹true›" do
-        expect(queues.paused?("foo")).to be true
-      end
-
-      it "support queue name given as Symbol" do
-        expect(queues.paused?(:foo)).to be true
+        expect(subject).to contain_exactly("foo", "bar")
       end
     end
   end
@@ -114,17 +89,15 @@ RSpec.describe Sidekiq::Pauzer::Queues do
   end
 
   describe "#stop_refresher" do
-    it "stops asynchronous refresher" do
-      queues.start_refresher
+    before { queues.start_refresher }
 
+    it "stops asynchronous refresher" do
       expect { queues.stop_refresher }.to change(queues, :refresher_running?).to(false)
     end
   end
 
   describe "#refresher_running?" do
     subject { queues.refresher_running? }
-
-    after { queues.stop_refresher }
 
     it { is_expected.to be false }
 

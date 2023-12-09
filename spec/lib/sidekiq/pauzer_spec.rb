@@ -20,22 +20,12 @@ RSpec.describe Sidekiq::Pauzer do
   describe ".pause!" do
     it "adds queue to the paused list" do
       expect { %w[foo bar].each { |q| described_class.pause!(q) } }
-        .to change { redis_smembers(described_class::REDIS_KEY) }.to(match_array(%w[foo bar]))
-        .and change(described_class, :paused_queues).to(match_array(%w[foo bar]))
-    end
-
-    it "support queue name given as Symbol" do
-      expect { %i[foo bar].each { |q| described_class.pause!(q) } }
-        .to change { redis_smembers(described_class::REDIS_KEY) }.to(match_array(%w[foo bar]))
-        .and change(described_class, :paused_queues).to(match_array(%w[foo bar]))
+        .to change { redis_smembers }.to(match_array(%w[foo bar]))
     end
 
     it "avoids duplicates" do
-      described_class.pause!("foo")
-
-      expect { %w[foo bar].each { |q| described_class.pause!(q) } }
-        .to change { redis_smembers(described_class::REDIS_KEY) }.to(match_array(%w[foo bar]))
-        .and change(described_class, :paused_queues).to(match_array(%w[foo bar]))
+      expect { %w[foo bar foo].each { |q| described_class.pause!(q) } }
+        .to change { redis_smembers }.to(match_array(%w[foo bar]))
     end
   end
 
@@ -47,20 +37,12 @@ RSpec.describe Sidekiq::Pauzer do
 
     it "removes queue from the paused list" do
       expect { described_class.unpause!("foo") }
-        .to change { redis_smembers(described_class::REDIS_KEY) }.to(contain_exactly("bar"))
-        .and change(described_class, :paused_queues).to(contain_exactly("bar"))
-    end
-
-    it "support queue name given as Symbol" do
-      expect { described_class.unpause!(:foo) }
-        .to change { redis_smembers(described_class::REDIS_KEY) }.to(contain_exactly("bar"))
-        .and change(described_class, :paused_queues).to(contain_exactly("bar"))
+        .to change { redis_smembers }.to(contain_exactly("bar"))
     end
 
     it "skips non-paused queues" do
       expect { described_class.unpause!("baz") }
-        .to keep_unchanged { redis_smembers(described_class::REDIS_KEY) }
-        .and keep_unchanged(described_class, :paused_queues)
+        .to(keep_unchanged { redis_smembers })
     end
   end
 
@@ -89,9 +71,20 @@ RSpec.describe Sidekiq::Pauzer do
   end
 
   describe ".paused_queues" do
-    it "returns list of paused queue names" do
-      expect { %w[foo bar].each { |q| described_class.pause!(q) } }
-        .to change(described_class, :paused_queues).to(match_array(%w[foo bar]))
+    before do
+      described_class.configure { |c| c.refresh_rate = 0.1 }
+    end
+
+    it "returns eventually consistent list of paused queue names" do
+      described_class.pause! "foo"
+      described_class.pause! "bar"
+
+      expect(described_class.paused_queues).to be_empty
+
+      described_class.startup
+      sleep 0.1
+
+      expect(described_class.paused_queues).to contain_exactly("foo", "bar")
     end
   end
 

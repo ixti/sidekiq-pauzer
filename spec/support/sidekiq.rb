@@ -16,12 +16,12 @@ module PauzerTestingContext
     Sidekiq.default_configuration.default_capsule.fire_event(...)
   end
 
-  def redis_smembers(key)
-    Sidekiq.redis { |conn| conn.call("SMEMBERS", key) }
+  def redis_smembers
+    Sidekiq.redis { |conn| conn.call("SMEMBERS", "sidekiq-pauzer") }
   end
 
-  def redis_sadd(key, value)
-    Sidekiq.redis { |conn| conn.call("SADD", key, value) }
+  def redis_sadd(value)
+    Sidekiq.redis { |conn| conn.call("SADD", "sidekiq-pauzer", value) }
   end
 end
 

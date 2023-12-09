@@ -1,52 +1,51 @@
 # frozen_string_literal: true
 
-require "forwardable"
 require "sidekiq"
 require "sidekiq/api"
+
+begin
+  # :nocov:
+  require "sidekiq-ent/version"
+  raise "sidekiq-pauzer is incompatible with Sidekiq Enterprise"
+  # :nocov:
+rescue LoadError
+  # All good - no compatibility issues
+end
+
+begin
+  # :nocov:
+  require "sidekiq/pro/version"
+  raise "sidekiq-pauzer is incompatible with Sidekiq Pro"
+  # :nocov:
+rescue LoadError
+  # All good - no compatibility issues
+end
 
 require_relative "./pauzer/config"
 require_relative "./pauzer/patches/basic_fetch"
 require_relative "./pauzer/patches/queue"
 require_relative "./pauzer/queues"
+require_relative "./pauzer/repository"
 require_relative "./pauzer/version"
-
-begin
-  require "sidekiq-ent/version"
-rescue LoadError
-  # All good - no compatibility issues
-end
-
-begin
-  require "sidekiq/pro/version"
-rescue LoadError
-  # All good - no compatibility issues
-end
-
-raise "sidekiq-pauzer is incompatible with Sidekiq Pro"        if Sidekiq.pro?
-raise "sidekiq-pauzer is incompatible with Sidekiq Enterprise" if Sidekiq.ent?
 
 module Sidekiq
   module Pauzer
-    REDIS_KEY = "sidekiq-pauzer"
-
     MUTEX = Mutex.new
     private_constant :MUTEX
 
-    @config = Config.new.freeze
-    @queues = Queues.new(@config)
+    @config     = Config.new.freeze
+    @repository = Repository.new
+    @queues     = Queues.new(@config.refresh_rate, repository: @repository)
 
     class << self
-      extend Forwardable
-
       # @example
       #   Sidekiq::Pauzer.pause!("minor")
       #   Sidekiq::Pauzer.paused?("minor") # => true
       #
-      # @param (see Queues#pause!)
+      # @param (see Repository#add)
       # @return [void]
-      def pause!(name)
-        @queues.pause!(name)
-
+      def pause!(queue_name)
+        @repository.add(queue_name)
         nil
       end
 
@@ -56,11 +55,10 @@ module Sidekiq
       #   Sidekiq::Pauzer.unpause!("minor")
       #   Sidekiq::Pauzer.paused?("minor") # => false
       #
-      # @param (see Queues#unpause!)
+      # @param (see Repository#delete)
       # @return [void]
-      def unpause!(name)
-        @queues.unpause!(name)
-
+      def unpause!(queue_name)
+        @repository.delete(queue_name)
         nil
       end
 
@@ -69,11 +67,13 @@ module Sidekiq
       #   Sidekiq::Pauzer.paused?("minor")  # => true
       #   Sidekiq::Pauzer.paused?("threat") # => false
       #
-      # @see Queues#paused?
-      def paused?(name)
-        @queues.paused?(name)
+      # @return (see Repository#include?)
+      def paused?(queue_name)
+        @repository.include?(queue_name)
       end
 
+      # Eventually consistent list of paused queues.
+      #
       # @example
       #   Sidekiq::Pauzer.pause!("minor")
       #   Sidekiq::Pauzer.paused_queues # => ["minor"]
@@ -121,7 +121,7 @@ module Sidekiq
 
       def reinit_queues
         @queues.stop_refresher
-        @queues = Queues.new(@config)
+        @queues = Queues.new(@config.refresh_rate, repository: @repository)
       end
     end
   end

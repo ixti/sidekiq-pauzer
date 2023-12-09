@@ -6,93 +6,54 @@ require "concurrent"
 module Sidekiq
   module Pauzer
     # @api internal
+    # Eventually consistent list of paused queues. Used by Sidekiq fetchers to
+    # avoid hitting Redis on every fetch call.
     class Queues
-      extend Forwardable
       include Enumerable
 
-      # @!attribute [r] refresh_rate
-      #   @see (Config#refresh_rate)
-      def_delegators :@config, :refresh_rate
-
-      # @param config [Config]
-      def initialize(config)
-        @config          = config
-        @names           = [].freeze
-        @names_mutex     = Mutex.new
-        @refresher       = nil
-        @refresher_mutex = Mutex.new
+      # @param refresh_rate [Float]
+      # @param repository [Repository]
+      def initialize(refresh_rate, repository:)
+        @names     = [].freeze
+        @refresher = Concurrent::TimerTask.new(execution_interval: refresh_rate, run_now: true) do
+          @names = repository.to_a.freeze
+        end
       end
 
+      # @overload each
+      #   @return [Enumerator<String>]
+      #
+      # @overload each(&block)
+      #   For a block { |queue_name| ... }
+      #   @yieldparam queue_name [String]
+      #   @return [self]
       def each(&block)
         return to_enum __method__ unless block
 
         start_refresher unless refresher_running?
-        @names_mutex.synchronize { @names.dup }.each(&block)
+        @names.each(&block)
 
         self
       end
 
-      # @param name [#to_s]
-      # @return [Queues] self
-      def pause!(name)
-        redis_call("SADD", Pauzer::REDIS_KEY, name.to_s)
-        refresh
-        self
-      end
-
-      # @param name [#to_s]
-      # @return [Queues] self
-      def unpause!(name)
-        redis_call("SREM", Pauzer::REDIS_KEY, name.to_s)
-        refresh
-        self
-      end
-
-      # @param name [#to_s]
-      # @return [Boolean]
-      def paused?(name)
-        include?(name.to_s)
-      end
-
+      # Starts paused queues list async poller.
+      #
+      # @return [self]
       def start_refresher
-        @refresher_mutex.synchronize do
-          @refresher&.shutdown
-          @refresher = Concurrent::TimerTask.execute(execution_interval: refresh_rate, run_now: true) { refresh }
-        end
-
+        @refresher.execute
         self
       end
 
+      # Stops paused queues list async poller.
+      #
+      # @return [self]
       def stop_refresher
-        @refresher_mutex.synchronize do
-          @refresher&.shutdown
-          @refresher = nil
-        end
-
+        @refresher.shutdown
         self
       end
 
       def refresher_running?
-        @refresher_mutex.synchronize do
-          @refresher&.running? || false
-        end
-      end
-
-      private
-
-      # @return [nil]
-      def refresh
-        names = redis_call("SMEMBERS", Pauzer::REDIS_KEY).to_a
-
-        @names_mutex.synchronize do
-          @names = names.each(&:freeze).freeze
-        end
-
-        nil
-      end
-
-      def redis_call(...)
-        Sidekiq.redis { |conn| conn.call(...) }
+        @refresher.running?
       end
     end
   end

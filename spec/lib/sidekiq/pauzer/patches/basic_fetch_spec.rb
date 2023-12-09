@@ -10,7 +10,11 @@ RSpec.describe Sidekiq::Pauzer::Patches::BasicFetch do
   let(:queues) { ["foo,1", "bar,10", "baz,100"] }
 
   before do
-    Sidekiq::Pauzer.pause!(:foo)
+    Sidekiq::Pauzer.pause!("foo")
+    Sidekiq::Pauzer.configure { |c| c.refresh_rate = 0.1 }
+    Sidekiq::Pauzer.startup
+    sleep 0.1
+
     stub_const("Sidekiq::BasicFetch::TIMEOUT", 0.1)
   end
 
