@@ -39,13 +39,13 @@ RSpec.describe Sidekiq::Pauzer::Queues do
   describe "#pause!" do
     it "adds queue to the paused list" do
       expect { %w[foo bar].each { |q| queues.pause!(q) } }
-        .to change { redis_smembers(config.redis_key) }.to(match_array(%w[foo bar]))
+        .to change { redis_smembers(Sidekiq::Pauzer::REDIS_KEY) }.to(match_array(%w[foo bar]))
         .and change(queues, :to_a).to(match_array(%w[foo bar]))
     end
 
     it "support queue name given as Symbol" do
       expect { %i[foo bar].each { |q| queues.pause!(q) } }
-        .to change { redis_smembers(config.redis_key) }.to(match_array(%w[foo bar]))
+        .to change { redis_smembers(Sidekiq::Pauzer::REDIS_KEY) }.to(match_array(%w[foo bar]))
         .and change(queues, :to_a).to(match_array(%w[foo bar]))
     end
 
@@ -53,7 +53,7 @@ RSpec.describe Sidekiq::Pauzer::Queues do
       queues.pause! "foo"
 
       expect { %w[foo bar].each { |q| queues.pause!(q) } }
-        .to change { redis_smembers(config.redis_key) }.to(match_array(%w[foo bar]))
+        .to change { redis_smembers(Sidekiq::Pauzer::REDIS_KEY) }.to(match_array(%w[foo bar]))
         .and change(queues, :to_a).to(match_array(%w[foo bar]))
     end
   end
@@ -66,19 +66,19 @@ RSpec.describe Sidekiq::Pauzer::Queues do
 
     it "removes queue from the paused list" do
       expect { queues.unpause!("foo") }
-        .to change { redis_smembers(config.redis_key) }.to(contain_exactly("bar"))
+        .to change { redis_smembers(Sidekiq::Pauzer::REDIS_KEY) }.to(contain_exactly("bar"))
         .and change(queues, :to_a).to(contain_exactly("bar"))
     end
 
     it "support queue name given as Symbol" do
       expect { queues.unpause!(:foo) }
-        .to change { redis_smembers(config.redis_key) }.to(contain_exactly("bar"))
+        .to change { redis_smembers(Sidekiq::Pauzer::REDIS_KEY) }.to(contain_exactly("bar"))
         .and change(queues, :to_a).to(contain_exactly("bar"))
     end
 
     it "skips non-paused queues" do
       expect { queues.unpause!("baz") }
-        .to keep_unchanged { redis_smembers(config.redis_key) }
+        .to keep_unchanged { redis_smembers(Sidekiq::Pauzer::REDIS_KEY) }
         .and keep_unchanged(queues, :to_a)
     end
   end

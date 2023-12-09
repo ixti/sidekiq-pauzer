@@ -10,10 +10,6 @@ module Sidekiq
       extend Forwardable
       include Enumerable
 
-      # @!attribute [r] redis_key
-      #   @see (Config#redis_key)
-      def_delegators :@config, :redis_key
-
       # @!attribute [r] refresh_rate
       #   @see (Config#refresh_rate)
       def_delegators :@config, :refresh_rate
@@ -39,7 +35,7 @@ module Sidekiq
       # @param name [#to_s]
       # @return [Queues] self
       def pause!(name)
-        redis_call("SADD", redis_key, name.to_s)
+        redis_call("SADD", Pauzer::REDIS_KEY, name.to_s)
         refresh
         self
       end
@@ -47,7 +43,7 @@ module Sidekiq
       # @param name [#to_s]
       # @return [Queues] self
       def unpause!(name)
-        redis_call("SREM", redis_key, name.to_s)
+        redis_call("SREM", Pauzer::REDIS_KEY, name.to_s)
         refresh
         self
       end
@@ -86,7 +82,7 @@ module Sidekiq
 
       # @return [nil]
       def refresh
-        names = redis_call("SMEMBERS", redis_key).to_a
+        names = redis_call("SMEMBERS", Pauzer::REDIS_KEY).to_a
 
         @names_mutex.synchronize do
           @names = names.each(&:freeze).freeze

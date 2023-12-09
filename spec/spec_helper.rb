@@ -35,10 +35,7 @@ RSpec.configure do |config|
     Sidekiq::Pauzer.shutdown
 
     Sidekiq::Pauzer.configure do |c|
-      default = Sidekiq::Pauzer::Config.new
-
-      c.refresh_rate = default.refresh_rate
-      c.key_prefix   = default.key_prefix
+      c.refresh_rate = Sidekiq::Pauzer::Config::REFRESH_RATE
     end
   end
 

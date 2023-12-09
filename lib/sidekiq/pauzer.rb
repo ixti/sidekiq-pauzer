@@ -27,18 +27,16 @@ raise "sidekiq-pauzer is incompatible with Sidekiq Enterprise" if Sidekiq.ent?
 
 module Sidekiq
   module Pauzer
+    REDIS_KEY = "sidekiq-pauzer"
+
     MUTEX = Mutex.new
+    private_constant :MUTEX
 
     @config = Config.new.freeze
     @queues = Queues.new(@config)
 
     class << self
       extend Forwardable
-
-      # @!attribute [r] redis_key
-      #   @see Config#redis_key
-      #   @return [String]
-      def_delegators :@config, :redis_key
 
       # @example
       #   Sidekiq::Pauzer.pause!("minor")

@@ -8,6 +8,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- Default `Sidekiq::Pauzer::Config#refresh_rate` is now 5 seconds (was 10)
+- (BREAKING) `Sidekiq::Pauzer::Config#key_prefix` now accepts only Floats
+
+### Removed
+
+- (BREAKING) Remove `Sidekiq::Pauzer::Config#key_prefix`
+
+
 ## [4.2.1] - 2023-11-26
 
 ### Changed
