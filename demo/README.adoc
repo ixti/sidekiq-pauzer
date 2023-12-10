@@ -7,5 +7,5 @@
 +
 [source,ruby]
 ----
-PauzerDemoJob.perform_bulk(Array.new(100) { |n| [n] })`
+PauzerDemoJob.perform_bulk(Array.new(100) { |n| [n] })
 ----
