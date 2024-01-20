@@ -8,6 +8,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Add Ruby-3.3 support
+
+
 ## [5.1.0] - 2023-12-11
 
 ### Changed
