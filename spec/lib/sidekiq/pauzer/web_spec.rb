@@ -107,7 +107,7 @@ RSpec.describe Sidekiq::Pauzer::Web do
 
       visit "/queues"
 
-      expect(page).not_to have_css("form[action='/queues/foo']")
+      expect(page).to have_no_css("form[action='/queues/foo']")
     end
   end
 
