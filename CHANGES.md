@@ -8,9 +8,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [5.2.0] - 2024-11-22
+
 ### Added
 
 - Add Ruby-3.3 support
+- Add Sidekiq-7.3 support
+
+### Changed
+
+- Don't mutate paused queues from within the refresher thread
 
 
 ## [5.1.0] - 2023-12-11
@@ -135,7 +142,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Initial release that supports sidekiq >= 6.5.0
 
 
-[unreleased]: https://github.com/ixti/sidekiq-pauzer/compare/v5.1.0...main
+[unreleased]: https://github.com/ixti/sidekiq-pauzer/compare/v5.2.0...main
+[5.2.0]: https://github.com/ixti/sidekiq-pauzer/compare/v5.1.0...v5.2.0
 [5.1.0]: https://github.com/ixti/sidekiq-pauzer/compare/v5.0.0...v5.1.0
 [5.0.0]: https://github.com/ixti/sidekiq-pauzer/compare/v4.2.1...v5.0.0
 [4.2.1]: https://github.com/ixti/sidekiq-pauzer/compare/v4.2.0...v4.2.1
