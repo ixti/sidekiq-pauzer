@@ -14,9 +14,8 @@ module Sidekiq
       # @param refresh_rate [Float]
       # @param repository [Repository]
       def initialize(refresh_rate, repository:)
-        @names     = [].freeze
         @refresher = Concurrent::TimerTask.new(execution_interval: refresh_rate, run_now: true) do
-          @names = repository.to_a.freeze
+          repository.to_a.freeze
         end
       end
 
@@ -31,7 +30,7 @@ module Sidekiq
         return to_enum __method__ unless block
 
         start_refresher unless refresher_running?
-        @names.each(&block)
+        @refresher.value&.each(&block)
 
         self
       end
