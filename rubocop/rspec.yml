@@ -11,6 +11,3 @@ RSpec/MultipleExpectations:
 
 RSpec/NamedSubject:
   Enabled: false
-
-RSpec/Rails:
-  Enabled: false
