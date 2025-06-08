@@ -17,7 +17,7 @@ module Sidekiq
           def apply!
             revert!
 
-            Sidekiq::WebAction.class_eval <<-RUBY, __FILE__, __LINE__ + 1 # rubocop:disable Style/DocumentDynamicEvalDefinition
+            Sidekiq::Web::Action.class_eval <<-RUBY, __FILE__, __LINE__ + 1 # rubocop:disable Style/DocumentDynamicEvalDefinition
               def _erb_queues
                 #{PAUZER_QUEUES_TEMPLATE}
               end
@@ -25,7 +25,7 @@ module Sidekiq
           end
 
           def revert!
-            Sidekiq::WebAction.remove_method(:_erb_queues) if Sidekiq::WebAction.method_defined?(:_erb_queues)
+            Sidekiq::Web::Action.remove_method(:_erb_queues) if Sidekiq::Web::Action.method_defined?(:_erb_queues)
           end
         end
       end

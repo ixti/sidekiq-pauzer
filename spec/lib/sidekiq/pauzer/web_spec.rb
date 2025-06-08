@@ -72,15 +72,25 @@ RSpec.describe Sidekiq::Pauzer::Web do
     it "allows pausing the queue" do
       visit "/queues"
 
-      expect(find("form[action='/queues/foo']")).to have_button("Pause").and have_no_button("Unpause")
-      expect(find("form[action='/queues/bar']")).to have_button("Pause").and have_no_button("Unpause")
+      within "form[action='/queues/foo']" do
+        expect(page).to have_button("Pause").and have_no_button("Unpause")
+      end
 
-      find("form[action='/queues/foo']").click_button("Pause")
+      within "form[action='/queues/bar']" do
+        expect(page).to have_button("Pause").and have_no_button("Unpause")
+
+        click_button("Pause")
+      end
 
       visit "/queues"
 
-      expect(find("form[action='/queues/foo']")).to have_no_button("Pause").and have_button("Unpause")
-      expect(find("form[action='/queues/bar']")).to have_button("Pause").and have_no_button("Unpause")
+      within "form[action='/queues/foo']" do
+        expect(page).to have_button("Pause").and have_no_button("Unpause")
+      end
+
+      within "form[action='/queues/bar']" do
+        expect(page).to have_button("Unpause").and have_no_button("Pause")
+      end
     end
 
     it "allows unpausing the queue" do
@@ -103,11 +113,8 @@ RSpec.describe Sidekiq::Pauzer::Web do
     it "allows clearing the queue" do
       visit "/queues"
 
-      find("form[action='/queues/foo']").click_button("Delete")
-
-      visit "/queues"
-
-      expect(page).to have_no_css("form[action='/queues/foo']")
+      expect { find("form[action='/queues/foo']").click_button("Delete") }
+        .to change { Sidekiq.redis { |r| r.call("exists", "queue:foo") } }.to(0)
     end
   end
 
@@ -119,11 +126,15 @@ RSpec.describe Sidekiq::Pauzer::Web do
     it "restores original view template", type: :feature do
       visit "/queues"
 
-      expect(find("form[action='/queues/foo']")).to have_no_button("Pause").and have_no_button("Unpause")
-      expect(find("form[action='/queues/bar']")).to have_no_button("Pause").and have_no_button("Unpause")
+      within "form[action='/queues/foo']" do
+        expect(page).to have_no_button("Pause").and have_no_button("Unpause")
+        expect(page).to have_button("Delete")
+      end
 
-      expect(find("form[action='/queues/foo']")).to have_button("Delete")
-      expect(find("form[action='/queues/bar']")).to have_button("Delete")
+      within "form[action='/queues/bar']" do
+        expect(page).to have_no_button("Pause").and have_no_button("Unpause")
+        expect(page).to have_no_button("Pause").and have_no_button("Unpause")
+      end
     end
   end
 end

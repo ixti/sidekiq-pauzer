@@ -1,4 +1,4 @@
-require:
+plugins:
   - rubocop-capybara
   - rubocop-performance
   - rubocop-rake
@@ -19,4 +19,4 @@ AllCops:
     - gemfiles/**/*
     - vendor/**/*
   NewCops: enable
-  TargetRubyVersion: 3.0
+  TargetRubyVersion: 3.2

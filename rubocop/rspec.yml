@@ -5,6 +5,8 @@ RSpec/BeNil:
 RSpec/ExampleLength:
   Enabled: true
   Max: 10
+  Exclude:
+    - spec/lib/sidekiq/pauzer/web_spec.rb
 
 RSpec/MultipleExpectations:
   Enabled: false

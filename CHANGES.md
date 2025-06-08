@@ -8,6 +8,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.0.0] - 2025-06-09
+
+### Added
+
+- Add Sidekiq-8.0 support
+
+### Removed
+
+- (BREAKING) Drop Sidekiq-7.x support
+- (BREAKING) Drop Redis-6.x support
+- (BREAKING) Drop Redis-6.x support
+- (BREAKING) Drop Ruby-3.0 support
+- (BREAKING) Drop Ruby-3.1 support
+
+
 ## [5.2.0] - 2024-11-22
 
 ### Added
