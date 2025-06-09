@@ -157,7 +157,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Initial release that supports sidekiq >= 6.5.0
 
 
-[unreleased]: https://github.com/ixti/sidekiq-pauzer/compare/v5.2.0...main
+[unreleased]: https://github.com/ixti/sidekiq-pauzer/compare/v6.0.0...main
+[6.0.0]: https://github.com/ixti/sidekiq-pauzer/compare/v5.2.0...v6.0.0
 [5.2.0]: https://github.com/ixti/sidekiq-pauzer/compare/v5.1.0...v5.2.0
 [5.1.0]: https://github.com/ixti/sidekiq-pauzer/compare/v5.0.0...v5.1.0
 [5.0.0]: https://github.com/ixti/sidekiq-pauzer/compare/v4.2.1...v5.0.0
